@@ -1,0 +1,72 @@
+<html>
+<script src="icecast-metadata-player-1.14.3.min.js"></script>
+<script>
+		const onMetadata = (metadata) => {
+			document.getElementById("metadata").innerHTML = metadata.StreamTitle;
+			document.title = metadata.StreamTitle + " [Deliria Radio]";
+		};
+
+    var volume = 50;
+
+		const player = 
+			new IcecastMetadataPlayer(
+				"radio/stream",
+				{ 
+					metadataTypes: ["icy", "ogg"],
+					onMetadata 
+				}
+			);
+		function changeVol(newVal) {
+      if((volume - newVal) >= 105) return;
+      if((volume - newVal) <= -5 ) return;
+      volume = volume - newVal;
+			player.audioElement.volume = volume / 100;
+      document.getElementById("volume-level").innerHTML = `${volume}%`;
+		}
+		function playPause()
+		{
+		    if( player.state == "stopped" )
+		    {
+			    document.getElementById( "playing" ).innerHTML = "[ Playing ]";
+			    document.getElementById("metadata").innerHTML = "Loading...";
+			    player.play();
+		    }
+		    if( player.state == "playing" )
+		    {
+    			document.getElementById( "playing" ).innerHTML = "[ Paused ]";
+		    	document.getElementById("metadata").innerHTML = "";
+          document.title = "";
+          player.stop();
+		    }
+
+		}
+	</script>
+<body style="display:flex;flex-direction:column;width:100%;height:100%;align-items:center;">
+<pre>
+         ooo
+        / : \
+       / o0o \
+ _____"~~~~~~~"_____
+ \+###|DELIRIA|###+/
+  \...!(RADIO)!.../
+   ^^^^o|   |o^^^^
++=====}:^^^^^:{=====+#
+.____  .|!!!|.  ____.
+|#####:/" " "\:#####|
+|#####=|  O  |=#####|
+|#####>\_____/<#####|
+ ^^^^^   | |   ^^^^^
+         o o
+</pre>
+
+<pre id="metadata"></pre>
+<pre onClick="playPause()" id="playing" style="margin-bottom: 0; padding-bottom: 0;cursor: pointer;">[ Click to start music ]</pre>
+<pre id="volume-control" style="display: flex; flex-direction: row; cursor: pointer;gap: 2rem;margin-top: 0; padding-top: 0; user-select: none;">
+  <pre onClick="changeVol(5)">Vol(-)</pre>
+  <pre id="volume-level">50%</pre>
+  <pre onClick="changeVol(-5)">Vol(+)</pre>
+</pre>
+
+<pre style="position: absolute; bottom: 0; left: 50%; right: 50%;"><a href="about.html">About This</a></pre>
+</body>
+</html>

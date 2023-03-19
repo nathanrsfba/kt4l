@@ -41,8 +41,8 @@
 
 
 		function changeVol(newVal) {
-      if((volume - newVal) >= 100) return;
-      if((volume - newVal) <= 0 ) return;
+      if((volume - newVal) >= 105) return;
+      if((volume - newVal) <= -5 ) return;
       volume = volume - newVal;
 			player.audioElement.volume = volume / 100;
       console.log(volume)

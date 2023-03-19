@@ -42,8 +42,8 @@
 
 
 		function changeVol(newVal) {
-      if((volume - newVal) >= 105) return;
-      if((volume - newVal) <= -5 ) return;
+      if((volume - newVal) >= 100) return;
+      if((volume - newVal) <= 0 ) return;
       volume = volume - newVal;
 			player.audioElement.volume = volume / 100;
       console.log(volume/10)
@@ -91,7 +91,7 @@
 <pre>
         (Audio may take a while to load)
 +----------------------------------------------+
-| <span onClick="playPause()" id="playing">(-)</span> | <span style="cursor: pointer; user-select: none;" onClick="changeVol(5)">(-)</span> <span id="volume">==============================</span> <span style="cursor: pointer; user-select: none;" onClick="changeVol(-5)">(+)</span> |
+| <span onClick="playPause()" id="playing">(-)</span> | <span style="cursor: pointer; user-select: none;" onClick="changeVol(1)">(-)</span> <span id="volume">==============================</span> <span style="cursor: pointer; user-select: none;" onClick="changeVol(-1)">(+)</span> |
 +-----+----------------------------------------+
 |                                              |
 |<span id="artist">                                              </span>|

@@ -1,70 +1,73 @@
 <html>
-<script src="icecast-metadata-player-1.14.3.min.js"></script>
-<script>
-		const onMetadata = (metadata) => {
-			document.getElementById("metadata").innerHTML = metadata.StreamTitle;
-			document.title = metadata.StreamTitle + " [Deliria Radio]";
-		    if ("mediaSession" in navigator) {
-			var meta = metadata.StreamTitle.split( " - ", 2 );
-			  navigator.mediaSession.metadata = new MediaMetadata({
-			          title: meta[0],
-			          artist: meta[1],
-			          album: "Deliria Radio"
-			        });
-		    }
-
-		};
-
-    var volume = 50;
-
-		const player = 
-			new IcecastMetadataPlayer(
-				"radio/stream",
-				{ 
-					metadataTypes: ["icy", "ogg"],
-					onMetadata 
-				}
-			);
-		function changeVol(newVal) {
-      if((volume - newVal) >= 105) return;
-      if((volume - newVal) <= -5 ) return;
-      volume = volume - newVal;
-			player.audioElement.volume = volume / 100;
-      document.getElementById("volume-level").innerHTML = `${volume}%`;
-		}
-		function playPause()
-		{
-		    if( player.state == "stopped" )
-		    {
-			    document.getElementById( "playing" ).innerHTML = "[ Playing ]";
-			    document.getElementById("metadata").innerHTML = "Loading...";
-			    player.play();
-		    }
-		    if( player.state == "playing" )
-		    {
-    			document.getElementById( "playing" ).innerHTML = "[ Paused ]";
-		    	document.getElementById("metadata").innerHTML = "";
-          document.title = "";
-          player.stop();
-		    }
-
-		}
+    <head>
+	<link rel="icon" type="image/x-icon" href="/icon.png">
+	<script src="icecast-metadata-player-1.14.3.min.js"></script>
+	<script>
+	    const onMetadata = (metadata) => {
+		document.getElementById("metadata").innerHTML = metadata.StreamTitle;
+		document.title = metadata.StreamTitle + " [Deliria Radio]";
 		if ("mediaSession" in navigator) {
-		      navigator.mediaSession.setActionHandler("play", () => {
-			  playPause();
-			    });
-		      navigator.mediaSession.setActionHandler("pause", () => {
-			  playPause();
-			    });
-		      navigator.mediaSession.setActionHandler("stop", () => {
-			  playPause();
-			    });
+		    var meta = metadata.StreamTitle.split( " - ", 2 );
+		    navigator.mediaSession.metadata = new MediaMetadata({
+			title: meta[0],
+			artist: meta[1],
+			album: "Deliria Radio"
+		    });
 		}
+
+	    };
+
+	    var volume = 50;
+
+	    const player = 
+		new IcecastMetadataPlayer(
+		    "radio/stream",
+		    { 
+			metadataTypes: ["icy", "ogg"],
+			onMetadata 
+		    }
+		);
+	    function changeVol(newVal) {
+		if((volume - newVal) >= 105) return;
+		if((volume - newVal) <= -5 ) return;
+		volume = volume - newVal;
+		player.audioElement.volume = volume / 100;
+		document.getElementById("volume-level").innerHTML = `${volume}%`;
+	    }
+	    function playPause()
+	    {
+		if( player.state == "stopped" )
+		{
+		    document.getElementById( "playing" ).innerHTML = "[ Playing ]";
+		    document.getElementById("metadata").innerHTML = "Loading...";
+		    player.play();
+		}
+		if( player.state == "playing" )
+		{
+		    document.getElementById( "playing" ).innerHTML = "[ Paused ]";
+		    document.getElementById("metadata").innerHTML = "";
+		    document.title = "";
+		    player.stop();
+		}
+
+	    }
+	    if ("mediaSession" in navigator) {
+		navigator.mediaSession.setActionHandler("play", () => {
+		    playPause();
+		});
+		navigator.mediaSession.setActionHandler("pause", () => {
+		    playPause();
+		});
+		navigator.mediaSession.setActionHandler("stop", () => {
+		    playPause();
+		});
+	    }
 
 
 	</script>
-<body style="display:flex;flex-direction:column;width:100%;height:100%;align-items:center;">
-<pre>
+    </head>
+    <body style="display:flex;flex-direction:column;width:100%;height:100%;align-items:center;">
+	<pre>
          ooo
         / : \
        / o0o \
@@ -79,20 +82,20 @@
 |#####>\_____/<#####|
  ^^^^^   | |   ^^^^^
          o o
-</pre>
+	</pre>
 
-<pre id="metadata"></pre>
-<pre onClick="playPause()" id="playing" style="margin-bottom: 0; padding-bottom: 0;cursor: pointer;">[ Click to start music ]</pre>
-<pre id="volume-control" style="display: flex; flex-direction: row; cursor: pointer;gap: 2rem;margin-top: 0; padding-top: 0; user-select: none;">
+	<pre id="metadata"></pre>
+	<pre onClick="playPause()" id="playing" style="margin-bottom: 0; padding-bottom: 0;cursor: pointer;">[ Click to start music ]</pre>
+	<pre id="volume-control" style="display: flex; flex-direction: row; cursor: pointer;gap: 2rem;margin-top: 0; padding-top: 0; user-select: none;">
   <pre onClick="changeVol(5)">Vol(-)</pre>
   <pre id="volume-level">50%</pre>
   <pre onClick="changeVol(-5)">Vol(+)</pre>
-</pre>
-<pre>
+	</pre>
+	<pre>
 You can also <a href="deliria.m3u">play</a> the stream on your desktop media player, 
 or point your player at http://telos.tardislabs.com:49365/stream
-</pre>
-<pre style="display: flex; flex-direction: row; position: absolute; bottom: 0; left: 50%; right: 50%;"><a href="about.html">About This</a></pre>
-</pre>
-</body>
+	</pre>
+	<pre style="display: flex; flex-direction: row; position: absolute; bottom: 0; left: 50%; right: 50%;"><a href="about.html">About This</a></pre>
+	</pre>
+    </body>
 </html>

@@ -4,6 +4,15 @@
 		const onMetadata = (metadata) => {
 			document.getElementById("metadata").innerHTML = metadata.StreamTitle;
 			document.title = metadata.StreamTitle + " [Deliria Radio]";
+		    if ("mediaSession" in navigator) {
+			var meta = metadata.StreamTitle.split( " - ", 2 );
+			  navigator.mediaSession.metadata = new MediaMetadata({
+			          title: meta[0],
+			          artist: meta[1],
+			          album: "Deliria Radio"
+			        });
+		    }
+
 		};
 
     var volume = 50;
@@ -40,6 +49,19 @@
 		    }
 
 		}
+		if ("mediaSession" in navigator) {
+		      navigator.mediaSession.setActionHandler("play", () => {
+			  playPause();
+			    });
+		      navigator.mediaSession.setActionHandler("pause", () => {
+			  playPause();
+			    });
+		      navigator.mediaSession.setActionHandler("stop", () => {
+			  playPause();
+			    });
+		}
+
+
 	</script>
 <body style="display:flex;flex-direction:column;width:100%;height:100%;align-items:center;">
 <pre>
@@ -67,6 +89,9 @@
   <pre onClick="changeVol(-5)">Vol(+)</pre>
 </pre>
 <pre>
+You can also <a href="deliria.m3u">play</a> the stream on your desktop media player, 
+or point your player at http://telos.tardislabs.com:49365/stream
+</pre>
 <pre style="display: flex; flex-direction: row; position: absolute; bottom: 0; left: 50%; right: 50%;"><a href="about.html">About This</a></pre>
 </pre>
 </body>

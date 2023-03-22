@@ -143,3 +143,12 @@ function sliderClick( e )
     setVol( x * 100 / width );
     // player.audioElement.volume = volume / 100;
 }
+
+// Bind media player keys to stream control
+if( "mediaSession" in navigator ) 
+{
+    navigator.mediaSession.setActionHandler( "play", () => { playPause(); } );
+    navigator.mediaSession.setActionHandler( "pause", () => { playPause(); } );
+    navigator.mediaSession.setActionHandler( "stop", () => { playPause(); } );
+}
+

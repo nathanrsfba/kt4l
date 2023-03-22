@@ -71,14 +71,14 @@ function playPause()
     if( player.state == "stopped" )
     {
 	document.getElementById( "playing" ).innerHTML = " ||";
-	document.getElementById("artist").innerHTML = "  Loading..." + " ".repeat( 34 );
+	document.getElementById( "artist" ).innerHTML = "  Loading..." + " ".repeat( 34 );
 	player.play();
     }
     if( player.state == "playing" )
     {
 	document.getElementById( "playing" ).innerHTML = " [>";
-	document.getElementById("artist").innerHTML = " ".repeat( 46 );
-	document.getElementById("title").innerHTML = " ".repeat( 46 );
+	document.getElementById( "artist" ).innerHTML = " ".repeat( 46 );
+	document.getElementById( "title" ).innerHTML = " ".repeat( 46 );
 	document.title = "[Deliria Radio]";
 	player.stop();
     }

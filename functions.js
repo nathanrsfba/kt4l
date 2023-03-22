@@ -9,6 +9,14 @@ const onMetadata = (metadata) => {
     document.getElementById("title").innerHTML  = 
 	`${" ".repeat(2)}${title}${" ".repeat((44-(title.length)))}`;
     document.title = metadata.StreamTitle + " [Deliria Radio]";
+    if( "mediaSession" in navigator ) 
+    {
+	navigator.mediaSession.metadata = new MediaMetadata({
+	    title: title,
+	    artist: artist,
+	    album: "Deliria Radio"
+	});
+    }
 };
 
 // Callback for when keys pressed, to implement keyboard shortcuts

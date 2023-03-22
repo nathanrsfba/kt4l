@@ -72,6 +72,14 @@ function playPause()
     {
 	document.getElementById( "playing" ).innerHTML = " ||";
 	document.getElementById( "artist" ).innerHTML = "  Loading..." + " ".repeat( 34 );
+	if( "mediaSession" in navigator ) 
+	{
+	    navigator.mediaSession.metadata = new MediaMetadata({
+		title: "Loading...",
+		artist: "",
+		album: "Deliria Radio"
+	    });
+	}
 	player.play();
     }
     if( player.state == "playing" )

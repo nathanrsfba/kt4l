@@ -1,76 +1,11 @@
-``<html>
-<script src="icecast-metadata-player-1.14.3.min.js"></script>
-<script defer>
-		const onMetadata = (metadata) => {
-			//document.getElementById("metadata").innerHTML = metadata.StreamTitle;
-      artist = metadata.StreamTitle.split(" - ")[0]
-      title  = metadata.StreamTitle.split(" - ")[1]
-      document.getElementById("artist").innerHTML = `${" ".repeat(2)}${artist}${" ".repeat((44-(artist.length)))}`
-      document.getElementById("title").innerHTML  = `${" ".repeat(4)}${title}${" ".repeat((42-(title.length)))}`
-  		document.title = metadata.StreamTitle + " [Deliria Radio]";
-		};
-
-    var volume = 100;
-    var artist;
-    var title;
-
-    document.onkeypress = function (e) {
-      e = e || window.event;
-      e.preventDefault();
-
-      // use e.keyCode
-      if(e.keyCode == 43){
-        changeVol(-5);
-      }
-      if(e.keyCode == 45){
-        changeVol(5);
-      }
-      if(e.keyCode == 32){
-        playPause();
-      }
-    };
-
-		const player = 
-			new IcecastMetadataPlayer(
-				"http://telos.tardislabs.com/radio/stream",
-				{ 
-					metadataTypes: ["icy", "ogg"],
-					onMetadata 
-				}
-			);
-
-
-		function changeVol(newVal) {
-      if((volume - newVal) >= 105) return;
-      if((volume - newVal) <= -5 ) return;
-      volume = volume - newVal;
-			player.audioElement.volume = volume / 100;
-      console.log(volume)
-      if(volume == 0){
-        document.getElementById("volume").innerHTML = " AUDIO MUTED                  "
-      }else{
-        document.getElementById("volume").innerHTML = `${"=".repeat(Math.ceil(((volume/10)*3)-1))}|${"-".repeat(3*(10 - (volume/10)))}`;
-      }
-		}
-		function playPause()
-		{
-		    if( player.state == "stopped" )
-		    {
-          document.getElementById( "playing" ).innerHTML = "(>)";
-			    //document.getElementById("metadata").innerHTML = "Loading...";
-			    player.play();
-		    }
-		    if( player.state == "playing" )
-		    {
-    			document.getElementById( "playing" ).innerHTML = "(-)";
-		    	//document.getElementById("metadata").innerHTML = "";
-          document.title = "";
-          player.stop();
-		    }
-
-		}
-	</script>
-<body style="display:flex;flex-direction:column;width:100%;height:100%;align-items:center;">
+<html>
+    <head>
+	<title>Deliria Radio</title>
+	<script src="icecast-metadata-player-1.14.3.min.js"></script>
+	<script defer src="functions.js"></script>
+	<link rel="stylesheet" href="style.css">
+    </head>
+    <body>
 <pre>
          ooo
         / : \
@@ -88,9 +23,8 @@
          o o
 </pre>
 <pre>
-        (Audio may take a while to load)
 +----------------------------------------------+
-| <span onClick="playPause()" id="playing">(-)</span> | <span style="cursor: pointer; user-select: none;" onClick="changeVol(5)">(-)</span> <span id="volume">==============================</span> <span style="cursor: pointer; user-select: none;" onClick="changeVol(-5)">(+)</span> |
+| <span id="playing" onClick="playPause()"> [></span> | <span class="volbtn" onClick="changeVol(5)">(-)</span> <span id="volume"><canvas id="volctl"></canvas><span id="volslid">==============================</span></span> <span class="volbtn" onClick="changeVol(-5)">(+)</span> |
 +-----+----------------------------------------+
 |                                              |
 |<span id="artist">                                              </span>|
@@ -98,8 +32,8 @@
 |                                              |
 |           (Played on Deliria)                |
 +----------------------------------------------+
-</pre>
+	</pre>
 
-<pre style="position: absolute; bottom: 0; left: 50%; right: 50%;"><a href="about.html">About This</a></pre>
-</body>
+	<pre class="about"><a href="about.html">About This</a></pre>
+    </body>
 </html>

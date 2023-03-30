@@ -1,13 +1,16 @@
 var volume = 100; // Current volume, 0-100
+var current = ''  // Current track
 
 // Callback for when icecast metadata changes
 const onMetadata = (metadata) => {
-    var artist = metadata.StreamTitle.split( " - " )[0];
-    var title  = metadata.StreamTitle.split( " - " )[1];
+    if( current != '' ) pushRecent( current );
+    current = metadata.StreamTitle;
+    var artist = current.split( " - " )[0];
+    var title  = current.split( " - " )[1];
     document.getElementById("artist").innerHTML = 
-	`${" ".repeat(2)}${artist}${" ".repeat((44-(artist.length)))}`;
+	` ${artist.padEnd( 43 )}`;
     document.getElementById("title").innerHTML  = 
-	`${" ".repeat(2)}${title}${" ".repeat((44-(title.length)))}`;
+	` ${title.padEnd( 43 )}`;
     document.title = metadata.StreamTitle + " [Deliria Radio]";
     if( "mediaSession" in navigator ) 
     {
@@ -18,6 +21,32 @@ const onMetadata = (metadata) => {
 	});
     }
 };
+
+// Push given track onto the recently played list
+function pushRecent( track )
+{
+    if( track == '' ) return;
+
+    document.getElementById( "recenthead" ).innerHTML = 
+	"Recently played: ".padEnd( 42 );
+    recent1 = document.getElementById( "recent1" );
+    recent2 = document.getElementById( "recent2" );
+    recent3 = document.getElementById( "recent3" );
+
+    recent3.innerHTML = recent2.innerHTML;
+    recent2.innerHTML = recent1.innerHTML;
+    recent1.innerHTML = track.substring( 0, 42 ).padEnd( 42 );
+}
+
+// Clear the Recents list
+function clearRecent()
+{
+    document.getElementById( "recenthead" ).innerHTML = ' '.repeat( 42 );
+    for( var i = 0; i < 3; i++ )
+    {
+	document.getElementById( `recent${i + 1}` ).innerHTML = ' '.repeat( 42 );
+    }
+}
 
 // Callback for when keys pressed, to implement keyboard shortcuts
 document.onkeypress = function ( e ) {
@@ -61,7 +90,7 @@ function setVol( newVal )
     else
     {
 	document.getElementById( "volslid" ).innerHTML = 
-	    `${"=".repeat(Math.ceil(((volume/10)*3)-1))}|${"-".repeat(3*(10 - (volume/10)))}`;
+	    `${"&#x2550;".repeat(Math.ceil(((volume/10)*3)-1))}&#x256a;${"&#x2550;".repeat(3*(10 - (volume/10)))}`;
     }
 }
 
@@ -70,8 +99,8 @@ function playPause()
 {
     if( player.state == "stopped" )
     {
-	document.getElementById( "playing" ).innerHTML = " ||";
-	document.getElementById( "artist" ).innerHTML = "  Loading..." + " ".repeat( 34 );
+	document.getElementById( "playing" ).innerHTML = "  &#x258c;&#x258c; ";
+	document.getElementById( "artist" ).innerHTML = "  Loading..." + " ".repeat( 32 );
 	if( "mediaSession" in navigator ) 
 	{
 	    navigator.mediaSession.metadata = new MediaMetadata({
@@ -81,15 +110,47 @@ function playPause()
 	    });
 	}
 	player.play();
+	clearRecent();
     }
     if( player.state == "playing" )
     {
-	document.getElementById( "playing" ).innerHTML = " [>";
-	document.getElementById( "artist" ).innerHTML = " ".repeat( 46 );
-	document.getElementById( "title" ).innerHTML = " ".repeat( 46 );
+	document.getElementById( "playing" ).innerHTML = "  &#x25ba;  ";
+	document.getElementById( "artist" ).innerHTML = " ".repeat( 44 );
+	document.getElementById( "title" ).innerHTML = " ".repeat( 44 );
 	document.title = "[Deliria Radio]";
 	player.stop();
+	pushRecent( current );
+	current = "";
     }
+}
+
+// Update stats
+function updateStats() {
+    const xhr = new XMLHttpRequest();
+    xhr.open( "GET", "/radio/status-json.xsl" );
+    xhr.send();
+    xhr.responseType = "json";
+    xhr.onload = () => {
+	if( xhr.readyState == 4 && xhr.status == 200 ) 
+	{
+	    var stats = xhr.response;
+	    var listeners = stats.icestats.source.listeners;
+	    document.getElementById( "listeners" ).innerHTML = 
+		` Current Listeners: ${String( listeners ).padEnd( 23 )}`;
+	    // console.log( stats );
+	} 
+	else 
+	{
+	    document.getElementById( "listeners" ).innerHTML = "";
+	    console.log( `Error: ${xhr.status}` );
+	}
+    };
+}
+
+// Callback when stream starts playing
+function onPlay()
+{
+    updateStats();
 }
 
 // Initialize player
@@ -97,7 +158,8 @@ const player =
     new IcecastMetadataPlayer( "/radio/stream",
 	{ 
 	    metadataTypes: ["icy", "ogg"],
-	    onMetadata 
+	    onMetadata,
+	    onPlay
 	}
     );
 
@@ -160,3 +222,8 @@ if( "mediaSession" in navigator )
     navigator.mediaSession.setActionHandler( "stop", () => { playPause(); } );
 }
 
+// Set up stats update callback
+setInterval( updateStats, 30000 );
+
+// Populate the intial stats info
+updateStats();

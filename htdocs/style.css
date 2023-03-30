@@ -1,9 +1,23 @@
+@font-face {
+    font-family: 'flexi_ibm_vga_trueregular';
+    src: url('flexi_ibm_vga_true-webfont.woff2') format('woff2'),
+    url('flexi_ibm_vga_true-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
 body {
     display:flex;
     flex-direction:column;
     width:100%;
     height:100%;
     align-items:center;
+    background: #000;
+    color: #080;
+}
+
+a {
+    color: #8f8;
 }
 
 #playing,
@@ -23,10 +37,59 @@ body {
     top: 0;
 }
 
+/*
 .about {
     position: absolute;
     bottom: 0;
     left: 50%;
     right: 50%;
+}
+*/
+
+.player {
+    font-family: "flexi_ibm_vga_trueregular";
+    font-size: 12pt;
+    line-height: .9em;
+}
+
+@media only screen and (min-width: 600px) {
+    body .player {
+	font-size: 16pt;
+    }
+}
+
+.player {
+    background-color: #008;
+    color: #ccc;
+}
+
+.player .border {
+    color: #ccc;
+}
+
+.player .titlebar {
+    background-color: #088;
+    color: #fff;
+}
+
+.player .volbtn {
+    background-color: #080;
+    color: #fff;
+}
+
+div.info {
+    display:flex;
+    flex-direction:column;
+    max-width: 60em;
+    height:100%;
+    align-items:center;
+
+}
+
+div.about,
+div.listen,
+div.stuff {
+    font-family: monospace;
+    width: 100%;
 }
 

@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# Get base directory
+
+dir="`realpath "$0"`"
+dir="`dirname "$dir"`"
+dir="`dirname "$dir"`"
+
+cd "$dir"
+
+# Make config from template
+
+ezcfg="`mktemp --suff .xml /tmp/ezstream.XXXXXXXX`"
+tools/cfgtemplate configs/*.cfg < configs/ezstream.xml >> "$ezcfg"
+
+iccfg="`mktemp --suff .xml /tmp/icecast.XXXXXXXX`"
+tools/cfgtemplate configs/*.cfg < configs/icecast.xml >> "$iccfg"
+
+# Start the apps
+icecast -b -c "$iccfg"
+ezstream -c "$ezcfg" & disown
+
+

@@ -63,11 +63,11 @@ document.onkeypress = function ( e ) {
     // use e.keyCode
     if( e.keyCode == 43 || e.keyCode == 61 )
     {
-	changeVol( -5 );
+	changeVol( 5 );
     }
     if( e.keyCode == 45 )
     {
-	changeVol( 5 );
+	changeVol( -5 );
     }
     if( e.keyCode == 32 )
     {
@@ -78,7 +78,7 @@ document.onkeypress = function ( e ) {
 // Change the volume by the given amount (signed)
 function changeVol( delta ) 
 {
-    setVol( volume - delta );
+    setVol( volume + delta );
 }
 
 // Set the volume to the given value

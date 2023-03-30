@@ -10,6 +10,7 @@ The following folders will be found here:
 
 Other stuff that lives here but isn't under version control:
 * library: Music library, presumably in the form of MP3 files
+* log: Log files.
 
 # Software #
 

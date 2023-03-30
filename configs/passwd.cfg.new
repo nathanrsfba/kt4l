@@ -7,3 +7,6 @@ SRCPASS=hackme
 
 # Icecast admin password
 ADMINPASS=hackme
+
+# Icecast relay password
+RELAYPASS=hackme

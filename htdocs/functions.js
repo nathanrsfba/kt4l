@@ -1,3 +1,8 @@
+const SITE = "Deliria Radio";  // Site title
+const WIDTH = 42;              // Player width in chars
+const STREAMURL = "/radio/stream";       // Stream URL
+const STATURL = "/radio/status-json.xsl" // Status URL
+
 var volume = 100; // Current volume, 0-100
 var current = ''  // Current track
 
@@ -8,16 +13,16 @@ const onMetadata = (metadata) => {
     var artist = current.split( " - " )[0];
     var title  = current.split( " - " )[1];
     document.getElementById("artist").innerHTML = 
-	` ${artist.padEnd( 43 )}`;
+	` ${artist.padEnd( WIDTH + 1 )}`;
     document.getElementById("title").innerHTML  = 
-	` ${title.padEnd( 43 )}`;
-    document.title = metadata.StreamTitle + " [Deliria Radio]";
+	` ${title.padEnd( WIDTH + 1 )}`;
+    document.title = `${metadata.StreamTitle} [${SITE}]`;
     if( "mediaSession" in navigator ) 
     {
 	navigator.mediaSession.metadata = new MediaMetadata({
 	    title: title,
 	    artist: artist,
-	    album: "Deliria Radio"
+	    album: SITE
 	});
     }
 };
@@ -28,23 +33,23 @@ function pushRecent( track )
     if( track == '' ) return;
 
     document.getElementById( "recenthead" ).innerHTML = 
-	"Recently played: ".padEnd( 42 );
+	"Recently played: ".padEnd( WIDTH );
     recent1 = document.getElementById( "recent1" );
     recent2 = document.getElementById( "recent2" );
     recent3 = document.getElementById( "recent3" );
 
     recent3.innerHTML = recent2.innerHTML;
     recent2.innerHTML = recent1.innerHTML;
-    recent1.innerHTML = track.substring( 0, 42 ).padEnd( 42 );
+    recent1.innerHTML = track.substring( 0, WIDTH ).padEnd( WIDTH );
 }
 
 // Clear the Recents list
 function clearRecent()
 {
-    document.getElementById( "recenthead" ).innerHTML = ' '.repeat( 42 );
+    document.getElementById( "recenthead" ).innerHTML = ' '.repeat( WIDTH );
     for( var i = 0; i < 3; i++ )
     {
-	document.getElementById( `recent${i + 1}` ).innerHTML = ' '.repeat( 42 );
+	document.getElementById( `recent${i + 1}` ).innerHTML = ' '.repeat( WIDTH );
     }
 }
 
@@ -83,14 +88,16 @@ function setVol( newVal )
     player.audioElement.volume = volume / 100;
 
     // console.log(volume)
+    const vwidth = WIDTH - 12;
     if( volume == 0 )
     {
-	document.getElementById( "volslid" ).innerHTML = " AUDIO MUTED                  ";
+	document.getElementById( "volslid" ).innerHTML = " AUDIO MUTED".padEnd( vwidth );
     }
     else
     {
+        var ptr = Math.floor( volume * (vwidth - 1) / 100 );
 	document.getElementById( "volslid" ).innerHTML = 
-	    `${"&#x2550;".repeat(Math.ceil(((volume/10)*3)-1))}&#x256a;${"&#x2550;".repeat(3*(10 - (volume/10)))}`;
+	    `${"&#x2550;".repeat( ptr )}&#x256a;${"&#x2550;".repeat( vwidth - ptr - 1 )}`;
     }
 }
 
@@ -100,13 +107,13 @@ function playPause()
     if( player.state == "stopped" )
     {
 	document.getElementById( "playing" ).innerHTML = "  &#x258c;&#x258c; ";
-	document.getElementById( "artist" ).innerHTML = "  Loading..." + " ".repeat( 32 );
+	document.getElementById( "artist" ).innerHTML = "  Loading..." + " ".repeat( WIDTH - 10 );
 	if( "mediaSession" in navigator ) 
 	{
 	    navigator.mediaSession.metadata = new MediaMetadata({
 		title: "Loading...",
 		artist: "",
-		album: "Deliria Radio"
+		album: SITE
 	    });
 	}
 	player.play();
@@ -115,9 +122,9 @@ function playPause()
     if( player.state == "playing" )
     {
 	document.getElementById( "playing" ).innerHTML = "  &#x25ba;  ";
-	document.getElementById( "artist" ).innerHTML = " ".repeat( 44 );
-	document.getElementById( "title" ).innerHTML = " ".repeat( 44 );
-	document.title = "[Deliria Radio]";
+	document.getElementById( "artist" ).innerHTML = " ".repeat( WIDTH + 2 );
+	document.getElementById( "title" ).innerHTML = " ".repeat( WIDTH + 2 );
+	document.title = `[${SITE}]`;
 	player.stop();
 	pushRecent( current );
 	current = "";
@@ -127,7 +134,7 @@ function playPause()
 // Update stats
 function updateStats() {
     const xhr = new XMLHttpRequest();
-    xhr.open( "GET", "/radio/status-json.xsl" );
+    xhr.open( "GET", STATURL );
     xhr.send();
     xhr.responseType = "json";
     xhr.onload = () => {
@@ -136,7 +143,7 @@ function updateStats() {
 	    var stats = xhr.response;
 	    var listeners = stats.icestats.source.listeners;
 	    document.getElementById( "listeners" ).innerHTML = 
-		` Current Listeners: ${String( listeners ).padEnd( 23 )}`;
+		` Current Listeners: ${String( listeners ).padEnd( WIDTH - 19 )}`;
 	    // console.log( stats );
 	} 
 	else 
@@ -155,7 +162,7 @@ function onPlay()
 
 // Initialize player
 const player = 
-    new IcecastMetadataPlayer( "/radio/stream",
+    new IcecastMetadataPlayer( STREAMURL,
 	{ 
 	    metadataTypes: ["icy", "ogg"],
 	    onMetadata,

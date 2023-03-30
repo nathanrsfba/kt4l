@@ -34,7 +34,7 @@
 
     <authentication>
         <!-- Sources log in with username 'source' -->
-        <source-password>%SRCPASS%</soUrce-password>
+        <source-password>%SRCPASS%</source-password>
         <!-- Relays log in with username 'relay' -->
         <relay-password>%RELAYPASS%</relay-password>
 

@@ -1,0 +1,65 @@
+#!/usr/bin/perl
+
+use MP3::Tag;
+
+my( $tmpl, $dir ) = @ARGV;
+
+sub getmp3s 
+{
+    my( $dir ) = @_;
+
+    my @mp3s = <"$dir/*.mp3">;
+    my @dirs = <"$dir/*/">;
+
+    my @data;
+
+    for my $file (@mp3s)
+    {
+        my $mp3 = MP3::Tag->new( $file );
+        my( $title, $track, $artist ) = $mp3->autoinfo();
+
+        my $link = $file;
+        $link =~ s/^.\///;
+        $link =~ s/ /%20/g;
+        $link =~ s/\/\//\//g;
+        push @data, [$link, $title, $artist];
+    }
+
+    for my $subdir (@dirs)
+    {
+        push @data, getmp3s( "$subdir" );
+    }
+
+    return @data;
+
+}
+
+if( $dir eq '' )
+{
+    die "Usage: $0 template directory\n";
+}
+my @mp3s = getmp3s( $dir );
+@mp3s = sort {$a->[1] cmp $b->[1]} @mp3s;
+
+open my $fh, $tmpl or die;
+while( <$fh> )
+{
+    if( /\%\w+%/ )
+    {
+        $template = $_;
+        for my $mp3 (@mp3s)
+        {
+            my %info;
+            @info{'link', 'title', 'artist'} = @$mp3;
+            $out = $template;
+            $out =~ s/%(\w+)%/$info{$1}/g;
+            print $out;
+        }
+    }
+    else
+    {
+        print
+    }
+}
+
+

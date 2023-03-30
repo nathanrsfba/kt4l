@@ -1,5 +1,7 @@
 const SITE = "Deliria Radio";  // Site title
 const WIDTH = 42;              // Player width in chars
+/* Note that this is the width, minus the side borders, and minus 2 spaces on
+ * each side. Code will adjust as necessary */
 const STREAMURL = "/radio/stream";       // Stream URL
 const STATURL = "/radio/status-json.xsl" // Status URL
 

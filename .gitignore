@@ -10,3 +10,6 @@ passwd.cfg
 
 # Playlist file
 playlist.m3u
+
+# Logs
+log

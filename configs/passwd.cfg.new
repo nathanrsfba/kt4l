@@ -1,0 +1,9 @@
+# This file should not be readable by anyone other than
+# radio admins, as it contains passwords!
+
+
+# Source password
+SRCPASS=hackme
+
+# Icecast admin password
+ADMINPASS=hackme

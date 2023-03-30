@@ -11,6 +11,9 @@ cd "$dir"
 # Fix this if it isn't already :P
 chmod o-rw configs/passwd*
 
+# Make this if necessary
+mkdir -p log
+
 # Make config from template
 
 ezcfg="`mktemp --suff .xml /tmp/ezstream.XXXXXXXX`"

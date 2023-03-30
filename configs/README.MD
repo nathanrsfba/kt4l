@@ -11,6 +11,8 @@ Files that will be found in here:
   passwords, make it non-world readable, and rename to passwd.cfg
 * index-template.html: A template for the library index. See documentation for
   mp3index in tools/README.MD
+* httpd.conf: Apache configuration options for the station. This should be
+  Included from httpd.conf
 
 Files that should be here, but not version controlled:
 

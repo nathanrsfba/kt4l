@@ -61,11 +61,11 @@ document.onkeypress = function ( e ) {
     e.preventDefault();
 
     // use e.keyCode
-    if( e.keyCode == 43 )
+    if( e.keyCode == 43 || e.keyCode == 61 )
     {
 	changeVol( -5 );
     }
-    if (e.keyCode == 45 )
+    if( e.keyCode == 45 )
     {
 	changeVol( 5 );
     }

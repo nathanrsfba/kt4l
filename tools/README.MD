@@ -36,3 +36,7 @@ as appropriate.
 The directory should contain the root of the library directory. All links will
 be relative to what appears here; in the case of Deliria, this should be run
 from the library directory, and the directory should just be '.'.
+
+## reindex ##
+
+A short shell script that runs mp3index to regen the library index

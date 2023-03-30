@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Get base directory
+
+dir="`realpath "$0"`"
+dir="`dirname "$dir"`"
+dir="`dirname "$dir"`"
+
+cd "$dir"
+
+cd library
+../tools/mp3index ../configs/index-template.html . > index.html

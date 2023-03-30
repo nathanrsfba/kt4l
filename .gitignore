@@ -5,3 +5,5 @@
 # Music library
 library
 
+# Password file
+passwd.cfg

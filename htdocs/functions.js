@@ -56,24 +56,23 @@ function clearRecent()
 }
 
 // Callback for when keys pressed, to implement keyboard shortcuts
-document.onkeypress = function ( e ) {
+document.addEventListener( "keypress", (e) => {
     e = e || window.event;
     e.preventDefault();
 
-    // use e.keyCode
-    if( e.keyCode == 43 || e.keyCode == 61 )
+    if( e.key == "+" || e.key == "=" )
     {
 	changeVol( 5 );
     }
-    if( e.keyCode == 45 )
+    if( e.key == "-" )
     {
 	changeVol( -5 );
     }
-    if( e.keyCode == 32 )
+    if( e.key == " " )
     {
 	playPause();
     }
-};
+}, false );
 
 // Change the volume by the given amount (signed)
 function changeVol( delta ) 

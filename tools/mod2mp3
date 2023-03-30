@@ -1,0 +1,163 @@
+#!/bin/bash
+
+BITS=16
+FREQ=44100
+CHANNELS=2
+UNSIGNED=''
+BITRATE=128
+ABR=''
+ARTIST=''
+ALBUM=''
+ARTFOLD=''
+TITLEARTFN=''
+TEST=''
+
+if [ "$1" = "" ]; then
+    exec $0 '-?'
+fi
+
+while getopts "ab:f:c:ur:A:L:FTN?" opt; do
+    case $opt in
+        '?')
+            echo -n "Convert a tracker module file to an MP3, using "
+            echo "xmp and lame"
+            echo
+            echo "Usage: $0 \\"
+            echo "  [-aFN] [-b bits] [-f freq] [-c chan]" \
+                "[-r bitrate] [-A artist] [-L album] files..."
+            echo
+            echo "  -a: Encode using ABR (average bitrate)"
+            echo "  -F: Take artist name from folder of original file"
+            echo "  -N: Take artist from filename (in 'title - artist' form)"
+            echo
+            echo "  bits: Sample width in bits: 8 or 16 (default: $BITS)"
+            echo "  freq: Frequency to render in (default: $FREQ)"
+            echo "  chan: Channels: 1 or 2 (default: $CHANNELS)"
+            echo "  rate: MP3 bitrate to encode in (default: $BITRATE)"
+            echo "  artist: Name of artist to place in ID3 tags"
+            echo "  album: Name of album to place in ID3 tags"
+            exit
+            ;;
+        b)
+            case "$OPTARG" in
+                8) BITS=8;;
+                16) BITS=16;;
+                *)
+                    echo "Invalid value: $OPTARG"
+                    exit 1;
+                    ;;
+            esac
+            ;;
+
+        f) FREQ="$OPTARG" ;;
+        c) CHANNELS=1 ;;
+        u) UNSIGNED=1 ;;
+        r) BITRATE="$OPTARG" ;;
+        a) ABR=1 ;;
+        A) ARTIST="$OPTARG" ;;
+        L) ALBUM="$OPTARG" ;;
+        F) ARTFOLD=1 ;;
+        N) TITLEARTFN=1 ;;
+        T) TEST=1 ;;
+
+        ?)
+            echo ERROR
+            exit 1
+            ;;
+
+    esac
+done
+
+if [ $CHANNELS = 1 ]; then
+    xmono='-m';
+    lchan="-m m";
+else
+    lchan="-m j";
+fi
+
+if [ $UNSIGNED ]; then
+    xunsigned='-u'
+    lsigned='--unsigned'
+else
+    lsigned='--signed'
+fi
+
+if [ $ABR ]; then
+    lbitrate="--abr $BITRATE"
+else
+    lbitrate="-b $BITRATE"
+fi
+
+shift $((OPTIND - 1))
+
+echoq() {
+    for word in "$@"; do
+        if [ "$word" = "" -o "${word% *}" != "$word" ]; then
+            echo -n "'$word' "
+        else
+            echo -n "$word "
+        fi
+    done
+    echo
+}
+
+xmpcmd() {
+    if [ $TEST ]; then
+        echoq xmp "$@"
+    else
+        xmp "$@"
+    fi
+}
+
+doxmp() {
+    xmpcmd -c -b $BITS -f "$FREQ" $xmono $xunsigned "$file"
+}
+
+lamecmd() {
+    if [ $TEST ]; then
+        echoq lame "$@"
+    else
+        lame "$@"
+    fi
+}
+
+dolame() {
+    lamecmd -r -s "$FREQ" --bitwidth $BITS $lbitrate $lsigned $lchan \
+        --tt "$title" --ta "$ARTIST" --tl "$ALBUM" \
+        - "$name.mp3"
+}
+
+for file in "$@"; do
+    name="${file%.*}"
+    title="`basename "$name"`"
+
+    if [ "$file" = "$name.mp3" ]; then
+        echo "Already an MP3: $file"
+    elif [ -e "$name.mp3" ]; then
+        echo "Skipped, already converted: $file"
+    else
+        if [ $ARTFOLD ]; then
+            dir="`dirname "$name"`"
+            ARTIST="`basename "$dir"`"
+        fi
+        if [ $TITLEARTFN ]; then
+            ARTIST="${title#* - }"
+            title="${title% - *}"
+        fi
+
+        echo "$file"
+        if [ $TEST ]; then
+            pipe="; echo '| ';"
+        else
+            pipe='|'
+        fi
+
+        if [ $TEST ]; then
+            doxmp
+            dolame
+        else
+            doxmp | dolame || exit 1
+        fi
+
+    fi
+done

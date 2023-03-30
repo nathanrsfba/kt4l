@@ -40,3 +40,32 @@ from the library directory, and the directory should just be '.'.
 ## reindex ##
 
 A short shell script that runs mp3index to regen the library index
+Convert a tracker module file to an MP3, using xmp and lame
+
+## mod2mp3 ##
+
+A shell script that converts module files to MP3 using xmp and lame. It takes a
+list of files on the command line, outputs converted files in the same
+directory as the original, with an extension of .mp3. It ignores files that
+already appear to have been converted (i.e. an .mp3 already exists) and
+specifically ignores .mp3 files, so you can happily pass it *.* in a directory
+that has already been partially converted.
+
+It passes options to lame to set the ID3 encoding. By default, the title is
+taken from the filename, and the artist and album are left blank.
+
+It takes the following command line options:
+
+* -a: Encode using ABR (average bitrate). Default is CBR.
+* -F: Take artist name from folder of original file. This sets the artist
+  properly if the modules are grouped into folders by artist.  
+* -N: Take both title and artist from filename. This expects the file to be
+  named in 'title - artist' form.
+* -b bits: Sample width in bits: 8 or 16 (default: 16)
+* -f freq: Frequency to render in (default: 44100)
+* -c chan: Channels: 1 or 2 (default: 2)
+* -b rate: MP3 bitrate to encode in (default: 128)
+* -A artist: Name of artist to place in ID3 tags. This will set the artist for
+  all files given on the command line.
+* -L album: Name of album to place in ID3 tags. This will set the album for all
+  files given

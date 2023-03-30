@@ -7,3 +7,6 @@ library
 
 # Password file
 passwd.cfg
+
+# Playlist file
+playlist.m3u

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-BITS=16
+# BITS=16
 FREQ=44100
 CHANNELS=2
-UNSIGNED=''
+# UNSIGNED=''
 BITRATE=128
 ABR=''
 ARTIST=''
@@ -23,14 +23,13 @@ while getopts "ab:f:c:ur:A:L:FTN?" opt; do
             echo "xmp and lame"
             echo
             echo "Usage: $0 \\"
-            echo "  [-aFN] [-b bits] [-f freq] [-c chan]" \
+            echo "  [-aFN] [-f freq] [-c chan]" \
                 "[-r bitrate] [-A artist] [-L album] files..."
             echo
             echo "  -a: Encode using ABR (average bitrate)"
             echo "  -F: Take artist name from folder of original file"
             echo "  -N: Take artist from filename (in 'title - artist' form)"
             echo
-            echo "  bits: Sample width in bits: 8 or 16 (default: $BITS)"
             echo "  freq: Frequency to render in (default: $FREQ)"
             echo "  chan: Channels: 1 or 2 (default: $CHANNELS)"
             echo "  rate: MP3 bitrate to encode in (default: $BITRATE)"
@@ -38,20 +37,20 @@ while getopts "ab:f:c:ur:A:L:FTN?" opt; do
             echo "  album: Name of album to place in ID3 tags"
             exit
             ;;
-        b)
-            case "$OPTARG" in
-                8) BITS=8;;
-                16) BITS=16;;
-                *)
-                    echo "Invalid value: $OPTARG"
-                    exit 1;
-                    ;;
-            esac
-            ;;
+        # b)
+        #     case "$OPTARG" in
+        #         8) BITS=8;;
+        #         16) BITS=16;;
+        #         *)
+        #             echo "Invalid value: $OPTARG"
+        #             exit 1;
+        #             ;;
+        #     esac
+        #     ;;
 
         f) FREQ="$OPTARG" ;;
-        c) CHANNELS=1 ;;
-        u) UNSIGNED=1 ;;
+        c) CHANNELS="$OPTARG" ;;
+        # u) UNSIGNED=1 ;;
         r) BITRATE="$OPTARG" ;;
         a) ABR=1 ;;
         A) ARTIST="$OPTARG" ;;
@@ -68,19 +67,12 @@ while getopts "ab:f:c:ur:A:L:FTN?" opt; do
     esac
 done
 
-if [ $CHANNELS = 1 ]; then
-    xmono='-m';
-    lchan="-m m";
-else
-    lchan="-m j";
-fi
-
-if [ $UNSIGNED ]; then
-    xunsigned='-u'
-    lsigned='--unsigned'
-else
-    lsigned='--signed'
-fi
+# if [ $UNSIGNED ]; then
+#     xunsigned='-u'
+#     lsigned='--unsigned'
+# else
+#     lsigned='--signed'
+# fi
 
 if [ $ABR ]; then
     lbitrate="--abr $BITRATE"
@@ -101,40 +93,18 @@ echoq() {
     echo
 }
 
-xmpcmd() {
-    if [ $TEST ]; then
-        echoq xmp "$@"
-    else
-        xmp "$@"
-    fi
-}
-
-doxmp() {
-    xmpcmd -c -b $BITS -f "$FREQ" $xmono $xunsigned "$file"
-}
-
-lamecmd() {
-    if [ $TEST ]; then
-        echoq lame "$@"
-    else
-        lame "$@"
-    fi
-}
-
-dolame() {
-    lamecmd -r -s "$FREQ" --bitwidth $BITS $lbitrate $lsigned $lchan \
-        --tt "$title" --ta "$ARTIST" --tl "$ALBUM" \
-        - "$name.mp3"
-}
 
 for file in "$@"; do
-    name="${file%.*}"
+    name="`realpath "$file"`"
+    name="${name%.*}"
     title="`basename "$name"`"
 
     if [ "$file" = "$name.mp3" ]; then
         echo "Already an MP3: $file"
     elif [ -e "$name.mp3" ]; then
         echo "Skipped, already converted: $file"
+    elif ! openmpt123 --probe "$file" | grep -q Success; then
+        echo "Skipped, not recognized by openmpt123: $file"
     else
         if [ $ARTFOLD ]; then
             dir="`dirname "$name"`"
@@ -146,18 +116,17 @@ for file in "$@"; do
         fi
 
         echo "$file"
-        if [ $TEST ]; then
-            pipe="; echo '| ';"
-        else
-            pipe='|'
-        fi
 
         if [ $TEST ]; then
-            doxmp
-            dolame
-        else
-            doxmp | dolame || exit 1
+            TEST=echoq
         fi
 
+        wav="`mktemp --suff .wav`"
+        $TEST openmpt123 -o "$wav" --force \
+            --samplerate "$FREQ" --channels "$CHANNELS" "$file" && \
+            $TEST lame $lbitrate \
+            --tt "$title" --ta "$ARTIST" --tl "$ALBUM" \
+            "$wav" "$name.mp3" || rm -f "$name.mp3"
     fi
+    rm -f "$wav"
 done

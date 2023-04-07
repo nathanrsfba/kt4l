@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# Reread the files in library/, shuffle them, store them in playlist.m3u, and
+# HUP ezstream. Also rebuild the HTML index
+
+
+# Get base directory
+
+dir="`realpath "$0"`"
+dir="`dirname "$dir"`"
+dir="`dirname "$dir"`"
+
+cd "$dir"
+
+echo "Recreating random playlist..."
+find "$dir/library" -iname '*.mp3' | sort -R > configs/playlist.m3u
+echo "Recreating library index..."
+"$dir"/tools/reindex
+echo "Signalling ezstream..."
+killall -HUP ezstream

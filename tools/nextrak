@@ -52,11 +52,11 @@ def selectTrack( playlist, state ):
     random.shuffle( playlist )
     for track in playlist:
         state['files'].setdefault( track, {
-            'lastplay': 0,
+            'lastplay': -999999,
             'len': mp3len( track )
             } )
         # Try to find something not played in the last 3 hours
-        if( state['files'][track]['lastplay'] + (60 * 60 * 3) < state['time'] ):
+        if( state['files'][track]['lastplay'] + (60 * 60 * 3) > state['time'] ):
             print( f"Rejecting {track}, too recent", file=sys.stderr )
             continue
         selection = track

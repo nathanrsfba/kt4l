@@ -14,12 +14,12 @@
        output format of the stream.
      -->
     <format>MP3</format>
-    <filename>/srv/radio/configs/playlist.m3u</filename>
+    <filename>/srv/radio/tools/nextrak</filename>
     <!--
        Indicate that <filename> contains an executable program or script,
        which prints a single line with a filename to standard output:
      -->
-    <playlist_program>0</playlist_program>
+    <playlist_program>1</playlist_program>
     <!--
       The following settings are used to describe your stream to the server.
       It's up to you to make sure that the bitrate/samplerate/channels

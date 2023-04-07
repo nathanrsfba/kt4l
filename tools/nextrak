@@ -1,0 +1,76 @@
+#!/usr/bin/python3
+
+import json
+import random
+import sys
+from pathlib import Path
+
+import music_tag
+
+# How you know a python coder started out life coding C...
+def main():
+    # Figure out some paths
+    path = Path( __file__ ).absolute().parent.parent
+    configs = path / 'configs'
+
+    # Load or create the state file
+    statepath = configs / 'state.json'
+    try:
+        with open( statepath ) as fp:
+            state = json.load( fp )
+    except FileNotFoundError:
+        state = {}
+
+    state.setdefault( 'version', 1 )
+    state.setdefault( 'time', 0 )
+    state.setdefault( 'files', {} )
+
+    # Load the playlist
+
+    playlistpath = configs / 'playlist.m3u'
+    with open( playlistpath ) as fp:
+        playlist = fp.read().splitlines()
+
+    print( f"Time is {state['time']}", file=sys.stderr )
+
+    selection = selectTrack( playlist, state )
+
+    state['files'][selection]['lastplay'] = state['time']
+    state['time'] += state['files'][selection]['len']
+
+    # Write the state file
+
+    with open( statepath, 'w' ) as fp:
+        json.dump( state, fp, indent=2 )
+
+    print( selection )
+
+def selectTrack( playlist, state ):
+    selection = None
+
+    # Go through tracks randomly, looking for a suitable one
+    random.shuffle( playlist )
+    for track in playlist:
+        state['files'].setdefault( track, {
+            'lastplay': 0,
+            'len': mp3len( track )
+            } )
+        # Try to find something not played in the last 3 hours
+        if( state['files'][track]['lastplay'] + (60 * 60 * 3) < state['time'] ):
+            print( f"Rejecting {track}, too recent", file=sys.stderr )
+            continue
+        selection = track
+        break
+
+    if selection == None:
+        selection = playlist[0]
+
+    return selection
+
+# Return the duration of an MP3 in seconds
+def mp3len( f ):
+    return int( music_tag.load_file( f )['#length'] )
+
+    
+if __name__ == "__main__":
+    main()

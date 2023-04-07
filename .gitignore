@@ -11,5 +11,8 @@ passwd.cfg
 # Playlist file
 playlist.m3u
 
+# State file for nextrak
+state.json
+
 # Logs
 log

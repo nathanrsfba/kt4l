@@ -26,6 +26,11 @@ def main():
                         default=path / 'library',
                         help="Path to music library"
                         )
+    parser.add_argument( 
+                        '-u', '--update', 
+                        action='store_true',
+                        help="Update library without choosing track"
+                        )
     args = parser.parse_args()
 
     library = Path( args.library )
@@ -84,21 +89,23 @@ def main():
 
     # perror( json.dumps( state, indent=2 ))
 
-    perror( f"Time is {state['time']}" )
+    if not args.update:
+        perror( f"Time is {state['time']}" )
 
-    selection = selectTrack( state )
+        selection = selectTrack( state )
 
-    selector.postSelect( selection, state )
+        selector.postSelect( selection, state )
 
-    state['files'][selection]['lastplay'] = state['time']
-    state['time'] += state['files'][selection]['len']
+        state['files'][selection]['lastplay'] = state['time']
+        state['time'] += state['files'][selection]['len']
 
     # Write the state file
 
     with open( statepath, 'w' ) as fp:
         json.dump( state, fp, indent=2 )
 
-    print( library / selection )
+    if not args.update:
+        print( library / selection )
 
 def getFiles( base, sub=Path() ):
     base = Path( base )

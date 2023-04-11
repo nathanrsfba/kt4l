@@ -68,3 +68,34 @@ It takes the following command line options:
   all files given on the command line.
 * -L album: Name of album to place in ID3 tags. This will set the album for all
   files given
+
+## nextrak ##
+
+A horribly overengineered Python script that selects the next song to be
+played. This is intended to be used as the 'playlist program' in the ezstream
+configuration. It chooses the next track to play.
+
+The main program lives in the file 'nextrak'. It loads a list of all the files
+in the music library folder, and stores information about all of them in a JSON
+structure. It removes any files that don't exist from the database, adds any
+that weren't present on the previous run, and updates the information on any
+that have been changed, or moved to another folder.
+
+It then imports selector.py: This has three functions:
+
+preSelect: Does anything that might need to be done before selecting a track.
+
+weighTrack: Called for every track in the system to give it a priority and
+weight. See the docstring in selector.py for details.
+
+postSelect: Does anything that might need to be done after selecting a track.
+
+This is flexible enough to potentially play certain tracks more often than
+others, insert jingles or ads at particular times, or any number of other
+possibilities.
+
+The selector.py file should contain all the acutal customization, and track
+selection code. Right now, it gives all tracks played in the previous 3 hours a
+low priority (so they're not played), and gives any tracks in the 'deliria'
+subfolder a lower weight.
+

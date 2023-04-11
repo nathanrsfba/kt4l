@@ -16,3 +16,6 @@ state.json
 
 # Logs
 log
+
+# Python bytecode
+*.pyc

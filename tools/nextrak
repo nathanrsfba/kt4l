@@ -4,17 +4,33 @@ import json
 import random
 import sys
 from pathlib import Path
+import argparse
 
-import music_tag
+import mutagen
+from mutagen.easyid3 import EasyID3
+
+import selector
 
 # How you know a python coder started out life coding C...
 def main():
-    # Figure out some paths
     path = Path( __file__ ).absolute().parent.parent
-    configs = path / 'configs'
 
-    # Load or create the state file
-    statepath = configs / 'state.json'
+    parser = argparse.ArgumentParser( description='Select the next song to play' )
+    parser.add_argument( 
+                        '-s', '--state', 
+                        default=path / 'configs' / 'state.json',
+                        help="Path to file to save state in between calls"
+                        )
+    parser.add_argument( 
+                        '-l', '--library', 
+                        default=path / 'library',
+                        help="Path to music library"
+                        )
+    args = parser.parse_args()
+
+    library = Path( args.library )
+    statepath = Path( args.state )
+
     try:
         with open( statepath ) as fp:
             state = json.load( fp )
@@ -25,15 +41,54 @@ def main():
     state.setdefault( 'time', 0 )
     state.setdefault( 'files', {} )
 
-    # Load the playlist
+    removes = {} # Files formerly in library that no longer exist
+    adds = {}    # Files just added to library
 
-    playlistpath = configs / 'playlist.m3u'
-    with open( playlistpath ) as fp:
-        playlist = fp.read().splitlines()
+    for file in list( state['files'].keys() ):
+        path = library / file
+        if not path.exists(): 
+            perror( f"Removing {file}" )
+            removes[str( path.name )] = state['files'][file]
+            del state['files'][file]
 
-    print( f"Time is {state['time']}", file=sys.stderr )
+    # perror( removes )
 
-    selection = selectTrack( playlist, state )
+    # Load the library
+    files = getFiles( library )
+
+
+    for file in files:
+        sfile = str( file )
+        path = library / file
+        if sfile not in state['files']:
+            if str( file.name ) in removes:
+                perror( f"Moving {file}" )
+                state['files'][sfile] = removes[str( file.name )]
+                state['files'][sfile]['folders'] = file.parent.parts
+            else:
+                perror( f"Adding {file}" )
+                state['files'][sfile] = {
+                    'lastplay': None,
+                    'added': state['time'],
+                    'folders': file.parent.parts,
+                    'modified': path.stat().st_mtime
+                    } 
+                state['files'][sfile].update( mp3Info( path ))
+                    
+        elif( 'modified' not in state['files'][sfile] or
+             state['files'][sfile]['modified'] < path.stat().st_mtime ):
+            perror( f"Updating {file}" )
+            state['files'][sfile].update( mp3Info( path ))
+            state['files'][sfile]['modified'] = path.stat().st_mtime
+
+
+    # perror( json.dumps( state, indent=2 ))
+
+    perror( f"Time is {state['time']}" )
+
+    selection = selectTrack( state )
+
+    selector.postSelect( selection, state )
 
     state['files'][selection]['lastplay'] = state['time']
     state['time'] += state['files'][selection]['len']
@@ -43,34 +98,65 @@ def main():
     with open( statepath, 'w' ) as fp:
         json.dump( state, fp, indent=2 )
 
-    print( selection )
+    print( library / selection )
 
-def selectTrack( playlist, state ):
-    selection = None
+def getFiles( base, sub=Path() ):
+    base = Path( base )
+    current = base
+    files = []
 
-    # Go through tracks randomly, looking for a suitable one
-    random.shuffle( playlist )
-    for track in playlist:
-        state['files'].setdefault( track, {
-            'lastplay': -999999,
-            'len': mp3len( track )
-            } )
-        # Try to find something not played in the last 3 hours
-        if( state['files'][track]['lastplay'] + (60 * 60 * 3) > state['time'] ):
-            print( f"Rejecting {track}, too recent", file=sys.stderr )
-            continue
-        selection = track
-        break
+    current = current / sub
+    files.extend( [sub / x.name for x in current.glob( "*.mp3" )] )
+    for dir in [x for x in current.glob( "*/" ) if x.is_dir()]:
+        path = sub / dir.name
+        files.extend( getFiles( base, path ))
 
-    if selection == None:
-        selection = playlist[0]
+    return files
+    
+def selectTrack( state ):
+    selector.preSelect( state )
+    tracks = {}
+    weights = {}
+    for file, info in state['files'].items():
+        (pri, weight) = selector.weighTrack( file, state )
+        # perror( f"{file}: {pri}.{weight}" )
+        tracks.setdefault( pri, [] ).append( file )
+        weights.setdefault( pri, [] ).append( weight )
 
+    pris = list( tracks.keys() )
+    pris.sort()
+    toppri = pris[0]
+
+    selection = random.choices( tracks[toppri], weights[toppri] )[0]
     return selection
 
-# Return the duration of an MP3 in seconds
-def mp3len( f ):
-    return int( music_tag.load_file( f )['#length'] )
+def mp3Info( f ):
+    """Get information on an MP3 in dict form"""
 
+    info = {}
+    try:
+        id3 = mutagen.File( f )
+
+        for key in id3.keys():
+            if 'text' in dir( id3[key] ):
+                info[key] = str( id3[key].text[0] )
+        info['len'] = float( id3.info.length )
+    except Exception as e:
+        perror( e )
+
+    try:
+        id3 = EasyID3( f )
+        for key in id3.keys():
+            info[key] = str( id3[key][0] )
+    except Exception as e:
+        perror( e )
+
+    return info
+
+def perror( *args ):
+    print( *args, file=sys.stderr )
     
 if __name__ == "__main__":
+    # print( mp3Info( 'library/music/misc/X-It.mp3' ))
     main()
+

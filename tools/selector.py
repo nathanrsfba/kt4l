@@ -3,6 +3,13 @@
 import sys
 import math
 
+# Some time constants
+second = 1
+minute = 60 * second
+hour = 60 * minute
+day = 24 * hour
+week = 7 * day
+
 def preSelect( state ):
     """Perform any needed functions before selecting a track"""
 
@@ -63,7 +70,7 @@ def weighTrack( track, state ):
     info = state['files'][track]
 
     if( info['lastplay'] != None and 
-       info['lastplay'] + (60 * 60 * 3) > state['time'] ):
+       info['lastplay'] + (3 * hour) > state['time'] ):
             # perror( f"Rejecting {track}, too recent" )
             return (100, 100)
     # perror( f"Setting normal weight for {track}" )

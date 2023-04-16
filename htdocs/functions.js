@@ -1,9 +1,9 @@
-const SITE = "Deliria Radio";  // Site title
+const SITE = "KT4L";  // Site title
 const WIDTH = 42;              // Player width in chars
 /* Note that this is the width, minus the side borders, and minus 2 spaces on
  * each side. Code will adjust as necessary */
-const STREAMURL = "/radio/stream";       // Stream URL
-const STATURL = "/radio/status-json.xsl" // Status URL
+const STREAMURL = "/radio2/stream";       // Stream URL
+const STATURL = "/radio2/status-json.xsl" // Status URL
 
 var volume = 100; // Current volume, 0-100
 var current = ''  // Current track
@@ -105,6 +105,7 @@ function setVol( newVal )
 // Start or stop the audio
 function playPause()
 {
+    console.log( "We're in PlayPause" );
     if( player.state == "stopped" )
     {
 	document.getElementById( "playing" ).innerHTML = "  &#x258c;&#x258c; ";
@@ -117,6 +118,7 @@ function playPause()
 		album: SITE
 	    });
 	}
+        console.log( "Starting player..." );
 	player.play();
 	clearRecent();
     }

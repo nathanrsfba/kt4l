@@ -14,7 +14,7 @@
        output format of the stream.
      -->
     <format>MP3</format>
-    <filename>/srv/radio/tools/nextrak</filename>
+    <filename>/home/nathanr/radiotest/tools/nextrak-kludge</filename>
     <!--
        Indicate that <filename> contains an executable program or script,
        which prints a single line with a filename to standard output:
@@ -25,10 +25,10 @@
       It's up to you to make sure that the bitrate/samplerate/channels
       information matches up with your lame encoder settings below.
      -->
-    <svrinfoname>Deliria Radio</svrinfoname>
+    <svrinfoname>Test Radio</svrinfoname>
     <svrinfourl>http://telos.tardislabs.com:%PORT%/stream</svrinfourl>
-    <svrinfogenre>Module</svrinfogenre>
-    <svrinfodescription>A stream of tracker music</svrinfodescription>
+    <svrinfogenre>Rock</svrinfogenre>
+    <svrinfodescription>Just some random (mostly) rock music</svrinfodescription>
     <svrinfobitrate>128</svrinfobitrate>
     <svrinfochannels>2</svrinfochannels>
     <svrinfosamplerate>44100</svrinfosamplerate>
@@ -71,7 +71,8 @@
             <format>MP3</format>
             <match>.mp3</match>
             <!-- Note: madplay uses host byte order for raw samples. -->
-            <decode>madplay -b 16 -R 44100 -S -o raw:- @T@</decode>
+            <!-- <decode>madplay -b 16 -R 44100 -S -o raw:- @T@</decode> -->
+            <decode>/home/nathanr/radiotest/tools/recode @T@</decode>
             <encode>lame --preset cbr 128 -r -s 44.1 --bitwidth 16 - -</encode>
         </encdec>
         <encdec>

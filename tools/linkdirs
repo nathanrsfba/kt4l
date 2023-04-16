@@ -1,0 +1,28 @@
+#!/bin/sh
+
+LIST=~/tweak.txt
+BASE=/media/sf_nathanr/Music/Album
+TARGET=~/radiotest/library/music
+
+grep -v '^*' "$LIST" | while read file; do
+    name="`basename "$file"`"
+    if [ -e "$TARGET/$name" ]; then
+        tpath="`realpath "$TARGET/$name"`"
+        bpath="`realpath "$BASE/$file"`"
+        if [ "$tpath" = "$bpath" ]; then
+            # Already exists, do nothing
+            # echo "+ $file"
+            true
+        else
+            # Already exists, but is something else
+            alt="`dirname "$file"`"
+            alt="`basename "$alt"` - $name"
+            if [ ! -e "$TARGET/$alt" ]; then
+                ln -s "`realpath "$BASE/$file"`" "$TARGET/$alt"
+            fi
+        fi
+    else
+        # Doesn't exist, link it
+        ln -s "`realpath "$BASE/$file"`" "$TARGET/$name"
+    fi
+done

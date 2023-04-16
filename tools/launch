@@ -14,16 +14,90 @@ chmod o-rw configs/passwd*
 # Make this if necessary
 mkdir -p log
 
-# Make config from template
+start() {
+    # Make config from template
 
-ezcfg="`mktemp --suff .xml /tmp/ezstream.XXXXXXXX`"
-tools/cfgtemplate configs/*.cfg < configs/ezstream.xml >> "$ezcfg"
+    ezcfg="`mktemp --suff .xml /tmp/ezstream.XXXXXXXX`"
+    tools/cfgtemplate configs/*.cfg < configs/ezstream.xml >> "$ezcfg"
 
-iccfg="`mktemp --suff .xml /tmp/icecast.XXXXXXXX`"
-tools/cfgtemplate configs/*.cfg < configs/icecast.xml >> "$iccfg"
+    iccfg="`mktemp --suff .xml /tmp/icecast.XXXXXXXX`"
+    tools/cfgtemplate configs/*.cfg < configs/icecast.xml >> "$iccfg"
 
-# Start the apps
-icecast -b -c "$iccfg"
-ezstream -c "$ezcfg" & disown
+    echo "Starting radio server..."
 
+    # Start the apps
+    icecast -c "$iccfg" & disown
+    icpid=$!
+    sleep 3
+    ezstream -c "$ezcfg" & disown
+    ezpid=$!
 
+    echo $icpid > configs/icecast.pid
+    echo $ezpid > configs/ezstream.pid
+}
+
+stop() {
+    echo "Stopping radio server..."
+
+    /bin/kill --timeout 5000 KILL `cat configs/ezstream.pid`
+    /bin/kill --timeout 5000 KILL `cat configs/icecast.pid`
+    rm -f configs/icecast.pid configs/ezstream.pid
+}
+
+check() {
+    if [ ! -e configs/icecast.pid ]; then
+        return 1
+    fi
+    if [ ! -e configs/ezstream.pid ]; then
+        return 1
+    fi
+
+    icpid=`cat configs/icecast.pid`
+    icname=`ps -p $icpid -o comm --no-headers`
+    if [ "$icname" != "icecast" ]; then
+        return 1
+    fi
+
+    ezpid=`cat configs/ezstream.pid`
+    ezname=`ps -p $ezpid -o comm --no-headers`
+    if [ "$ezname" != "ezstream" ]; then
+        return 1
+    fi
+
+    return 0
+}
+
+case $1 in
+    ''|start)
+        if check; then
+            echo "Already running"
+            exit 1
+        else
+            start
+        fi
+        ;;
+    stop)
+        if check; then
+            stop
+        else
+            echo "Not running"
+            exit 1
+        fi
+        ;;
+    restart)
+        if check; then
+            stop
+        fi
+        start
+        ;;
+
+    check)
+        check
+        ;;
+
+    *)
+        echo "Usage: $0 [start|stop|restart]"
+        exit 1
+        ;;
+
+esac

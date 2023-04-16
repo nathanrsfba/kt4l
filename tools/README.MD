@@ -81,7 +81,11 @@ structure. It removes any files that don't exist from the database, adds any
 that weren't present on the previous run, and updates the information on any
 that have been changed, or moved to another folder.
 
-It then imports selector.py: This has three functions:
+It then imports selector.py: This has four functions:
+
+readTrack: Called when a track is added or updated in the database. Any
+information that the selector needs (from ID3 tags, etc) should be grabbed here
+and inserted in the database.
 
 preSelect: Does anything that might need to be done before selecting a track.
 

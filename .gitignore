@@ -19,3 +19,6 @@ log
 
 # Python bytecode
 *.pyc
+
+# PID storage
+*.pid

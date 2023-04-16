@@ -22,3 +22,6 @@ log
 
 # PID storage
 *.pid
+
+# Currently playing file
+current.mp3

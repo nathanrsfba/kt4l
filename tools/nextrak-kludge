@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Get base directory
+
+dir="`realpath "$0"`"
+dir="`dirname "$dir"`"
+dir="`dirname "$dir"`"
+
+cd "$dir"
+
+# Call nextrak, get the next track, symlink it to a file, then return that
+
+next="`tools/nextrak`" || exit 1
+
+ln -sf "$next" current.mp3
+realpath -s current.mp3
+

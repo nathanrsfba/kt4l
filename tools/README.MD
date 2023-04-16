@@ -99,3 +99,17 @@ selection code. Right now, it gives all tracks played in the previous 3 hours a
 low priority (so they're not played), and gives any tracks in the 'deliria'
 subfolder a lower weight.
 
+## nextrak-kludge ##
+
+This is a dirty hack to get around the fact that ezstream can't handle files
+with single quotes in the name.
+
+According to the ezstream documentation, when running external scripts, the
+arguments passed are quoted in single quotes, with single quotes and
+backslashes quoted.
+
+This is a lie.
+
+This script runs nextrak, gets the next track, then symlinks it to a standard
+filename, which ezstream can't choke on.
+

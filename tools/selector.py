@@ -144,6 +144,11 @@ def doWeighTrack( track, state ):
     weight = 100
     info = state['files'][track]
 
+    # If a track is first in the queue, prioritize it
+    queue = state.setdefault( 'queue', [] )
+    if queue and queue[0] == track:
+        return (-5, 100)
+
     # If a track is marked as 'skip', never play it
     if info['skip']:
         return (1000, 100)
@@ -185,6 +190,12 @@ def postSelect( track, state ):
     # Record the last time a track from this artist was played
     state.setdefault( 'artistlast', {} )[info['artist']] = state['time']
 
+    # If this is top of queue, pop it
+    queue = state.setdefault( 'queue', [] )
+    if queue and queue[0] == track:
+        queue.pop( 0 )
+
+    # Check if this is the start of a follow group
     index = state['trackindex'][info['artist']][info['album']]
     i = info['track']
     if len( index ) > i and state['files'][index[i]]['follow']:

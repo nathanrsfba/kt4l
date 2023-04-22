@@ -67,7 +67,7 @@ fadeout = float( fileinfo['TXXX:FadeOut'][0] ) if 'TXXX:FadeOut' in fileinfo els
 
 if (end or 0) < 0: 
     end += length
-else:
+elif end:
     end = end + length - fileinfo.info.length
 
 # Setup and call the decoder

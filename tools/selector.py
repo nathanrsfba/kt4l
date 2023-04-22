@@ -146,9 +146,9 @@ def doWeighTrack( track, state ):
        info['lastplay'] + (3 * hour) > state['time'] ):
             return (100, 100)
 
-    # If an artist has been played in the last 15 mins, don't play it
+    # If an artist has been played in the last 60 mins, don't play it
     if( info['artist'] in state.setdefault( 'artistlast', {} ) and
-       state['artistlast'][info['artist']] + (15 * minute) > state['time'] ):
+       state['artistlast'][info['artist']] + (60 * minute) > state['time'] ):
             return (90, 100)
 
     return (1, weight)
@@ -169,7 +169,7 @@ def postSelect( track, state ):
     state['lasttrack'] = info['followid']
 
     # Record the last time a track from this artist was played
-    state.setdefault( 'artistlast', {} ).setdefault( info['artist'], state['time'] )
+    state.setdefault( 'artistlast', {} )[info['artist']] = state['time']
 
 def perror( *args ):
     print( *args, file=sys.stderr )

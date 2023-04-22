@@ -8,6 +8,7 @@ import argparse
 
 import mutagen
 from mutagen.easyid3 import EasyID3
+import fasteners
 
 import selector
 
@@ -18,7 +19,8 @@ def main():
     # paths
     path = Path( __file__ ).absolute().parent.parent
 
-    parser = argparse.ArgumentParser( description='Select the next song to play' )
+    parser = argparse.ArgumentParser( description=
+                                     'Select the next song to play' )
     parser.add_argument( 
                         '-s', '--state', 
                         default=path / 'configs' / 'state.json',
@@ -44,85 +46,88 @@ def main():
 
     library = Path( args.library )
     statepath = Path( args.state )
+    lockpath = statepath.with_name( statepath.name + ".lock" )
+    lock = fasteners.InterProcessLock( lockpath )
 
-    try:
-        with open( statepath ) as fp:
-            state = json.load( fp )
-    except FileNotFoundError:
-        state = {}
+    with lock:
+        try:
+            with open( statepath ) as fp:
+                state = json.load( fp )
+        except FileNotFoundError:
+            state = {}
 
-    state.setdefault( 'version', 1 )
-    state.setdefault( 'time', 0 )
-    state.setdefault( 'files', {} )
+        state.setdefault( 'version', 1 )
+        state.setdefault( 'time', 0 )
+        state.setdefault( 'files', {} )
 
-    removes = {} # Files formerly in library that no longer exist
-    adds = {}    # Files just added to library
+        removes = {} # Files formerly in library that no longer exist
+        adds = {}    # Files just added to library
 
-    # Remove files from the database that no longer exist. But, save a record
-    # of them in case they are later found in another folder.
-    for file in list( state['files'].keys() ):
-        path = library / file
-        if not path.exists(): 
-            perror( f"Removing {file}" )
-            removes[str( path.name )] = state['files'][file]
-            del state['files'][file]
+        # Remove files from the database that no longer exist. But, save a
+        # record of them in case they are later found in another folder.
+        for file in list( state['files'].keys() ):
+            path = library / file
+            if not path.exists(): 
+                perror( f"Removing {file}" )
+                removes[str( path.name )] = state['files'][file]
+                del state['files'][file]
 
-    # perror( removes )
+        # perror( removes )
 
-    # Load the library
-    files = getFiles( library )
+        # Load the library
+        files = getFiles( library )
 
-    for file in files:
-        sfile = str( file )     # Relative path to file, as string
-        path = library / file   # Full path to file
-        if sfile not in state['files']:
-            if str( file.name ) in removes:
-                # If a file with the same name was deleted in the same run,
-                # consider it 'moved'
-                perror( f"Moving {file}" )
-                state['files'][sfile] = removes[str( file.name )]
-                state['files'][sfile]['folders'] = file.parent.parts
-            else:
-                perror( f"Adding {file}" )
+        for file in files:
+            sfile = str( file )     # Relative path to file, as string
+            path = library / file   # Full path to file
+            if sfile not in state['files']:
+                if str( file.name ) in removes:
+                    # If a file with the same name was deleted in the same run,
+                    # consider it 'moved'
+                    perror( f"Moving {file}" )
+                    state['files'][sfile] = removes[str( file.name )]
+                    state['files'][sfile]['folders'] = file.parent.parts
+                else:
+                    perror( f"Adding {file}" )
+                    id3, easy = mp3Info( path )
+                    state['files'][sfile] = {
+                        'lastplay': None,
+                        'added': state['time'],
+                        'folders': file.parent.parts,
+                        'modified': path.stat().st_mtime,
+                        'len': id3.info.length
+                        } 
+                    selector.readTrack( sfile, state, id3, easy )
+                        
+            elif( 'modified' not in state['files'][sfile] or
+                 state['files'][sfile]['modified'] < path.stat().st_mtime or
+                 args.update_all ):
+                perror( f"Updating {file}" )
+                state['files'][sfile]['modified'] = path.stat().st_mtime
                 id3, easy = mp3Info( path )
-                state['files'][sfile] = {
-                    'lastplay': None,
-                    'added': state['time'],
-                    'folders': file.parent.parts,
-                    'modified': path.stat().st_mtime,
-                    'len': id3.info.length
-                    } 
+                state['files'][sfile]['len'] = id3.info.length
                 selector.readTrack( sfile, state, id3, easy )
-                    
-        elif( 'modified' not in state['files'][sfile] or
-             state['files'][sfile]['modified'] < path.stat().st_mtime or
-             args.update_all ):
-            perror( f"Updating {file}" )
-            state['files'][sfile]['modified'] = path.stat().st_mtime
-            id3, easy = mp3Info( path )
-            state['files'][sfile]['len'] = id3.info.length
-            selector.readTrack( sfile, state, id3, easy )
 
 
-    # perror( json.dumps( state, indent=2 ))
+        # perror( json.dumps( state, indent=2 ))
 
-    if not args.update:
-        perror( f"Time is {state['time']}" )
+        if not args.update:
+            perror( f"Time is {state['time']}" )
 
-        selection = selectTrack( state )
+            selection = selectTrack( state )
 
-        result = selector.postSelect( selection, state )
-        if not result:
-            result = (selection,)
-        for selection in result:
-            state['files'][selection]['lastplay'] = state['time']
-            state['time'] += state['files'][selection]['len']
-            print( library / selection )
+            result = selector.postSelect( selection, state )
+            if not result:
+                result = (selection,)
+            for selection in result:
+                state['files'][selection]['lastplay'] = state['time']
+                state['time'] += state['files'][selection]['len']
+                print( library / selection )
 
-    # Write the state file
+        # Write the state file
 
-    with open( statepath, 'w' ) as fp:
-        json.dump( state, fp, indent=2 )
+        with open( statepath, 'w' ) as fp:
+            json.dump( state, fp, indent=2 )
 
 def getFiles( base, sub=Path() ):
     """Recursively get a list of all mp3 files in a directory
@@ -176,8 +181,8 @@ def mp3Info( f ):
     f: Path to the file
 
     Return:
-    A 2-tuple containing the information as returned by Mutagen, followed by the
-    information returned by Mutagen.EasyID3.
+    A 2-tuple containing the information as returned by Mutagen, followed by
+    the information returned by Mutagen.EasyID3.
     """
 
     id3 = None

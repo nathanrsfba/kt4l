@@ -1,0 +1,80 @@
+#!/usr/bin/python3
+
+from mutagen.id3 import ID3, TXXX
+import argparse
+
+parser=argparse.ArgumentParser(
+        prog='tag', 
+        description='Add ID2 tags for radio functions',
+        epilog="Notes:\n" +
+        "START and END may be specified as seconds, or in " +
+        "MM:SS format. Additionally, END may be negative which, " +
+        "similar to Python indexes, specifies a number of seconds from " +
+        "the *end* of the track.\n\n" +
+        "START, END, FADE_IN and FADE_OUT may be blank strings, " +
+        "in which case, the corresponding tag will be deleted."
+        )
+
+parser.add_argument( 'files', nargs='+', help='Files to tag' ) 
+parser.add_argument( '-s', '--start',
+                    help='Time to start playing at' ) 
+parser.add_argument( '-e', '--end',
+                    help='Time to stop playing at' ) 
+parser.add_argument( '-i', '--fade-in',
+                    help='Number of seconds to fade in at start' )
+parser.add_argument( '-o', '--fade-out',
+                    help='Number of seconds to fade out at end' )
+parser.add_argument( '-S', '--skip', action='store_true',
+                    help='Never play this track' )
+parser.add_argument( '--no-skip', action='store_true', 
+                    help='Turn off skip' )
+parser.add_argument( '-F', '--follow', action='store_true',
+                    help='Always and only play this after preceeding track' )
+parser.add_argument( '--no-follow', action='store_true', 
+                    help='Turn off follow' )
+
+
+opts = parser.parse_args()
+
+for file in opts.files:
+    data = ID3( file )
+
+    def setTag( tag, opt ):
+        if opt == '' and f'TXXX:{tag}' in data:
+            del data[f'TXXX:{tag}']
+        elif opt:
+            data.add( TXXX( desc=tag, text=[opt] ))
+
+    setTag( 'Start', opts.start )
+    setTag( 'End', opts.end )
+    setTag( 'FadeIn', opts.fade_in )
+    setTag( 'FadeOut', opts.fade_out )
+
+    def setBoolean( tag, trueVal, falseVal ):
+        if trueVal:
+            data.add( TXXX( desc=tag, text=['1'] ))
+        if falseVal:
+            data.add( TXXX( desc=tag, text=['0'] ))
+
+    setBoolean( 'Skip', opts.skip, opts.no_skip )
+    setBoolean( 'Follow', opts.follow, opts.no_follow )
+
+    data.save()
+    print( f'{file}:' )
+    for tag in ('Start', 'End', 'FadeIn', 'FadeOut',
+                'Skip', 'Follow'):
+        if f'TXXX:{tag}' in data:
+            print( f'  {tag}: {data[f"TXXX:{tag}"]}' )
+        else:
+            print( f'  {tag}: Not set' )
+
+
+
+# 
+# 
+# print( data )
+# del data['TXXX:test']
+# data.save()
+
+
+

@@ -37,10 +37,10 @@ def readTrack( track, state, id3, easy ):
 
     # Convert NN or NN/NN format into just a plain int
     if 'tracknumber' in easy:
-        track = easy['tracknumber'][0]
-        track = track.partition( '/' )[0]
-        track = int( track )
-        info['track'] = track
+        tracknum = easy['tracknumber'][0]
+        tracknum = tracknum.partition( '/' )[0]
+        tracknum = int( tracknum )
+        info['track'] = tracknum
     else:
         info['track'] = None
 
@@ -56,14 +56,15 @@ def readTrack( track, state, id3, easy ):
         else:
             info[fieldl] = False
 
-    # Create links for 'follow' tracks.
-    # followid contains the artist, album, and track number. This is
-    # stored in the database whenever the track is played. link contains
-    # (if a track is marked as 'follow') the followid for the track
-    # preceeding it
-    info['followid'] = f"{info['artist']}:{info['album']}:{info['track']}"
-    if info['follow']:
-        info['link'] = f"{info['artist']}:{info['album']}:{info['track'] - 1}"
+    # Create an index of tracks by album and track number
+    index = (state.setdefault( 'trackindex', {} )
+             .setdefault( info['artist'], {} )
+             .setdefault( info['album'], [] ))
+
+    if len( index ) < tracknum:
+        index.extend( (None,) * (tracknum - len( index )))
+        index[tracknum - 1] = track
+
 
 
 def preSelect( state ):
@@ -164,12 +165,19 @@ def postSelect( track, state ):
 
     info = state['files'][track]
 
-    # Record the selected track's follow id, to facilitate playing successor
-    # track
-    state['lasttrack'] = info['followid']
-
     # Record the last time a track from this artist was played
     state.setdefault( 'artistlast', {} )[info['artist']] = state['time']
+
+    index = state['trackindex'][info['artist']][info['album']]
+    i = info['track']
+    if len( index ) > i and state['files'][index[i]]['follow']:
+        group = [track]
+        while len( index ) > i and state['files'][index[i]]['follow']:
+            group.append( index[i] )
+            i += 1
+
+        return group
+
 
 def perror( *args ):
     print( *args, file=sys.stderr )

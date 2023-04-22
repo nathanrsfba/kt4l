@@ -111,18 +111,18 @@ def main():
 
         selection = selectTrack( state )
 
-        selector.postSelect( selection, state )
-
-        state['files'][selection]['lastplay'] = state['time']
-        state['time'] += state['files'][selection]['len']
+        result = selector.postSelect( selection, state )
+        if not result:
+            result = (selection,)
+        for selection in result:
+            state['files'][selection]['lastplay'] = state['time']
+            state['time'] += state['files'][selection]['len']
+            print( library / selection )
 
     # Write the state file
 
     with open( statepath, 'w' ) as fp:
         json.dump( state, fp, indent=2 )
-
-    if not args.update:
-        print( library / selection )
 
 def getFiles( base, sub=Path() ):
     """Recursively get a list of all mp3 files in a directory

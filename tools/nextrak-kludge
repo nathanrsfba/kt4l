@@ -10,8 +10,12 @@ cd "$dir"
 
 # Call nextrak, get the next track, symlink it to a file, then return that
 
-next="`tools/nextrak`" || exit 1
+tools/nextrak > playlist.txt || exit 1
 
-ln -sf "$next" current.mp3
+ln -sf "`head -1 playlist.txt`" current.mp3
+if [ `wc -l playlist.txt | cut -d ' ' -f 1` = 1 ]; then
+    rm playlist.txt
+fi
+
 realpath -s current.mp3
 

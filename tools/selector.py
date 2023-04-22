@@ -134,13 +134,9 @@ def doWeighTrack( track, state ):
     # If a track is marked as 'skip', never play it
     if info['skip']:
         return (1000, 100)
-    # If a track is marked as 'follow', never play it, unless the previous track
-    # just played, in which case, play it above all other priorities
+    # 'follow' tracks are just skipped, as they're handled differently now
     if info['follow']:
-        if info['link'] == state.setdefault( 'lasttrack', '' ):
-            return (-1000, 100)
-        else:
-            return (1000,100)
+        return (1000, 100)
 
     # If a track has been played in the last 3 hours, don't play it
     if( info['lastplay'] != None and 

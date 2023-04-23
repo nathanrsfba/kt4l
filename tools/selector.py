@@ -37,10 +37,10 @@ def readTrack( track, state, id3, easy ):
 
     # Convert NN or NN/NN format into just a plain int
     if 'tracknumber' in easy:
-        track = easy['tracknumber'][0]
-        track = track.partition( '/' )[0]
-        track = int( track )
-        info['track'] = track
+        tracknum = easy['tracknumber'][0]
+        tracknum = tracknum.partition( '/' )[0]
+        tracknum = int( tracknum )
+        info['track'] = tracknum
     else:
         info['track'] = None
 
@@ -56,14 +56,15 @@ def readTrack( track, state, id3, easy ):
         else:
             info[fieldl] = False
 
-    # Create links for 'follow' tracks.
-    # followid contains the artist, album, and track number. This is
-    # stored in the database whenever the track is played. link contains
-    # (if a track is marked as 'follow') the followid for the track
-    # preceeding it
-    info['followid'] = f"{info['artist']}:{info['album']}:{info['track']}"
-    if info['follow']:
-        info['link'] = f"{info['artist']}:{info['album']}:{info['track'] - 1}"
+    # Create an index of tracks by album and track number
+    index = (state.setdefault( 'trackindex', {} )
+             .setdefault( info['artist'], {} )
+             .setdefault( info['album'], [] ))
+
+    if len( index ) < tracknum:
+        index.extend( (None,) * (tracknum - len( index )))
+        index[tracknum - 1] = track
+
 
 
 def preSelect( state ):
@@ -104,15 +105,28 @@ def weighTrack( track, state ):
             folder 'foo/bar', the list will contain ['foo', 'bar']
         modified: The time the file was last modified, in 'unix' time. Used by
             the main program to detect when a file has been updated.
-        len: The duration of the track in seconds
+        len: The duration of the track in (fractional) seconds
 
         Note that this does not include ID3 information about the track by
         default. Any such information needed by the selection algorithm should
-        be added by the readTrack function.
+        be added by the readTrack function. The one in this file will populate
+        'artist', 'album', 'title', and 'track' (number). Any such details not
+        in the ID3 tags will be filled with None.
 
     You can also add items to this dict as part of the selection (or pre- or
     post-selection) process. The only requirement is that the items added are
     properly JSON serializable.
+
+    The readTrack in this file adds the following:
+        trackindex: A dict of artists, each containing a dict of albums, each
+            containing an array of files on the album. This can be used to look
+            up a file by album and track number, as used by the follow code.
+
+    The postSelect in this file also adds the following:
+        lastplay: A dict storing the last time a file in a given subfolder was
+            played, in 'internal' time
+        artistlast: A dict storing the last time a file by a particular artist
+            was played, in 'internal' time
 
     Return:
     A tuple containing priority and weight, in that order
@@ -130,16 +144,17 @@ def doWeighTrack( track, state ):
     weight = 100
     info = state['files'][track]
 
+    # If a track is first in the queue, prioritize it
+    queue = state.setdefault( 'queue', [] )
+    if queue and queue[0] == track:
+        return (-5, 100)
+
     # If a track is marked as 'skip', never play it
     if info['skip']:
         return (1000, 100)
-    # If a track is marked as 'follow', never play it, unless the previous track
-    # just played, in which case, play it above all other priorities
+    # 'follow' tracks are just skipped, as they're handled differently now
     if info['follow']:
-        if info['link'] == state.setdefault( 'lasttrack', '' ):
-            return (-1000, 100)
-        else:
-            return (1000,100)
+        return (1000, 100)
 
     # If a track has been played in the last 3 hours, don't play it
     if( info['lastplay'] != None and 
@@ -154,7 +169,15 @@ def doWeighTrack( track, state ):
     return (1, weight)
 
 def postSelect( track, state ):
-    """Perform any needed functions after selecting a track"""
+    """Perform any needed functions after selecting a track.
+
+    track: The path to the file that was selected
+    state: The state database
+
+    Return:
+    May be None, in which case the selected file will be played as expected.
+    Otherwise, should be a list giving a set of files to be played as a unit.
+    """
 
     # Record the last time a track in a particular folder was played
     state.setdefault( 'lastplay', {} )
@@ -164,12 +187,25 @@ def postSelect( track, state ):
 
     info = state['files'][track]
 
-    # Record the selected track's follow id, to facilitate playing successor
-    # track
-    state['lasttrack'] = info['followid']
-
     # Record the last time a track from this artist was played
     state.setdefault( 'artistlast', {} )[info['artist']] = state['time']
+
+    # If this is top of queue, pop it
+    queue = state.setdefault( 'queue', [] )
+    if queue and queue[0] == track:
+        queue.pop( 0 )
+
+    # Check if this is the start of a follow group
+    index = state['trackindex'][info['artist']][info['album']]
+    i = info['track']
+    if len( index ) > i and state['files'][index[i]]['follow']:
+        group = [track]
+        while len( index ) > i and state['files'][index[i]]['follow']:
+            group.append( index[i] )
+            i += 1
+
+        return group
+
 
 def perror( *args ):
     print( *args, file=sys.stderr )

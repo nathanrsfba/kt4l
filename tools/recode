@@ -22,6 +22,7 @@ effects to apply to the output.
 """
 
 import sys
+from pathlib import Path
 from subprocess import Popen, check_output, PIPE
 
 import mutagen
@@ -42,35 +43,56 @@ class settings:
     fx = ["compand", "0.3,1", "-90,-90,-70,-70,-60,-20,0,0", "-5", "0", "0.2"]
 
 filename = sys.argv[1]
+path = Path( filename )
+playlist = path.parent / "playlist.txt"
+if playlist.exists():
+    with open( playlist ) as f:
+        files = f.read().splitlines()
+    playlist.unlink()
+else:
+    files = [filename]
 
-fileinfo = mutagen.File( filename )    # ID3, etc. info about the file
-length = float( fileinfo.info.length ) # Track duration in seconds
+length = 0.0 # Track duration in seconds
+for file in files:
+    fileinfo = mutagen.File( file )
+    length += float( fileinfo.info.length ) 
 
+fileinfo = mutagen.File( files[0] )
 start = parseTime( fileinfo['TXXX:Start'][0] ) if 'TXXX:Start' in fileinfo else None
-end = parseTime( fileinfo['TXXX:End'][0] ) if 'TXXX:End' in fileinfo else None
 fadein = float( fileinfo['TXXX:FadeIn'][0] ) if 'TXXX:FadeIn' in fileinfo else None
+
+fileinfo = mutagen.File( files[-1] )
+end = parseTime( fileinfo['TXXX:End'][0] ) if 'TXXX:End' in fileinfo else None
 fadeout = float( fileinfo['TXXX:FadeOut'][0] ) if 'TXXX:FadeOut' in fileinfo else None
 
-if (end or 0) < 0: end += length
+if (end or 0) < 0: 
+    end += length
+elif end:
+    end = end + length - fileinfo.info.length
 
 # Setup and call the decoder
-args = ["madplay", 
-        "-b", str( settings.width ),
-        "-R", str( settings.rate ),
-        "-S" if settings.channels == 2 else "-m"]
+args = ["mpg123", 
+        # "-b", str( settings.width ),
+        "-r", str( settings.rate ),
+        "--stereo" if settings.channels == 2 else "-m"]
 
+fstart = None
 if start:
-    args.extend( ['-s', str( start )] )
+    fstart = start * 44100 / 1152
+    args.extend( ['-k', str( fstart )] )
 if end:
-    # Convert ending time point into duration as expected by madplay
-    args.extend( ['-t', str( end - (start or 0) )] )
+    fend = end * 44100 / 1152
+    # Does endtime include skipped frames or not?
+    args.extend( ['-n', str( fend - (fstart or 0) )] )
 
 
 args.extend( [
-    "-o", "raw:-", 
-    filename] )
+    '--continue',
+    "-s" ] )
 
-# print( args, file=sys.stderr )
+args.extend( files )
+
+print( args, file=sys.stderr )
 
 decoder = Popen( args, stdout=PIPE )
 

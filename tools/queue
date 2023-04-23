@@ -1,0 +1,134 @@
+#!/usr/bin/python3
+
+import json
+import argparse
+from pathlib import Path
+
+import fasteners
+
+def main():
+    # Figure out the root of the 'radio' directory (assumes this script is
+    # located in the 'tools' directory of said directory) to work out default
+    # paths
+    path = Path( __file__ ).absolute().parent.parent
+
+    parser = argparse.ArgumentParser( description=
+                                     'Queue a song to play' )
+    parser.add_argument( 
+                        '-s', '--state', 
+                        default=path / 'configs' / 'state.json',
+                        help="Path to file to save state in between calls"
+                        )
+    parser.add_argument( 
+                        '-r', '--remove', 
+                        action='store_true',
+                        help="Remove an item from the queue"
+                        )
+    parser.add_argument( 
+                        '-l', '--list', 
+                        action='store_true',
+                        help="List matches without altering queue"
+                        )
+    parser.add_argument( 
+                        '-p', '--position',
+                        help="Position to insert into queue at"
+                        )
+    parser.add_argument( 
+                        '-m', '--move',
+                        help="Move track to position"
+                        )
+    parser.add_argument( 'keywords',
+                        nargs='*',
+                        help="Keywords of track to queue"
+                        )
+    args = parser.parse_args()
+    statepath = Path( args.state )
+    lockpath = statepath.with_name( statepath.name + ".lock" )
+    lock = fasteners.InterProcessLock( lockpath )
+
+    with lock:
+        try:
+            with open( statepath ) as fp:
+                state = json.load( fp )
+        except FileNotFoundError:
+            state = {}
+
+        queue = state.setdefault( 'queue', [] )
+
+        if not args.keywords:
+            for i in range( len( queue )):
+                info = state['files'][queue[i]]
+                print( f"{i + 1}: {info['artist']}: {info['title']}" )
+            return
+
+        sel = []
+        for file in state['files']:
+            foundall = True
+            for word in args.keywords:
+                word = word.lower()
+                found = False
+                for key in ('artist', 'album', 'title' ):
+                    # print( f"Checking {state['files'][file][key].lower()} vs {word}" )
+                    if state['files'][file][key].lower().find( word ) != -1:
+                        found = True
+                        break
+                if not found:
+                    foundall = False
+                    break
+            if foundall and not state['files'][file]['skip']:
+                if not args.remove and not args.move:
+                    sel.append( file )
+                else:
+                    if file in queue:
+                        sel.append( file )
+
+
+        if len( sel ) > 1 or args.list:
+            if not args.list:
+                print( "Multiple matching items:" )
+            for item in sel:
+                info = state['files'][item]
+                print( f"{info['artist']}: {info['title']}" )
+            return
+        if len( sel ) == 0:
+            print( "No matches" )
+            return
+
+        sel = sel[0]
+        info = state['files'][sel]
+        title = f"{info['artist']}: {info['title']}"
+
+        if (args.remove or args.move) and (sel not in queue):
+            print( f'Not in queue: {title}' )
+            return
+        elif args.remove:
+            print( f'Removing: {title}' )
+            queue.remove( sel )
+        elif args.move:
+            print( f"Moving to position {args.move}: {title}" )
+            queue.remove( sel )
+            queue.insert( int( args.move ) - 1, sel )
+        elif sel in queue:
+            print( f"Already in queue: {title}" )
+            return
+        elif args.position:
+            print( f"Queueing at position {args.position}: {title}" )
+            queue.insert( int( args.position ) - 1, sel )
+        else:
+            print( f"Queueing: {title}" )
+            queue.append( sel )
+
+        # Write the state file
+
+        with open( statepath, 'w' ) as fp:
+            json.dump( state, fp, indent=2 )
+
+
+
+
+
+
+if __name__ == "__main__":
+    main()
+
+

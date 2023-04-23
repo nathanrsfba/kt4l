@@ -25,6 +25,11 @@ def main():
                         help="Remove an item from the queue"
                         )
     parser.add_argument( 
+                        '-l', '--list', 
+                        action='store_true',
+                        help="List matches without altering queue"
+                        )
+    parser.add_argument( 
                         '-p', '--position',
                         help="Position to insert into queue at"
                         )
@@ -70,7 +75,7 @@ def main():
                 if not found:
                     foundall = False
                     break
-            if foundall:
+            if foundall and not state['files'][file]['skip']:
                 if not args.remove and not args.move:
                     sel.append( file )
                 else:
@@ -78,8 +83,9 @@ def main():
                         sel.append( file )
 
 
-        if len( sel ) > 1:
-            print( "Multiple mathcing items:" )
+        if len( sel ) > 1 or args.list:
+            if not args.list:
+                print( "Multiple matching items:" )
             for item in sel:
                 info = state['files'][item]
                 print( f"{info['artist']}: {info['title']}" )

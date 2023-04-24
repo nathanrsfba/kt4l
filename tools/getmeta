@@ -1,0 +1,100 @@
+#!/usr/bin/python3
+
+import json
+import sys
+from pathlib import Path
+from datetime import datetime
+import argparse
+
+import mutagen
+from mutagen.easyid3 import EasyID3
+
+def main():
+    # Figure out the root of the 'radio' directory (assumes this script is
+    # located in the 'tools' directory of said directory) to work out default
+    # paths
+    path = Path( __file__ ).absolute().parent.parent
+
+    parser = argparse.ArgumentParser( description=
+                                     'Provide metadata for current point in time' )
+    parser.add_argument( 
+                        '-p', '--playlist', 
+                        default=None,
+                        help="Create metadata info for current set of tracks"
+                        )
+    parser.add_argument( 
+                        '-m', '--metadata',
+                        default=path / 'metadata.json',
+                        help="File to create/retrieve metadata from"
+                        )
+    parser.add_argument( 
+                        'mode',
+                        nargs='?',
+                        help="Type of metadata to retrieve"
+                        )
+    args = parser.parse_args()
+    metapath = Path( args.metadata )
+
+    if args.playlist:
+        makeMetadata( metapath, args.playlist )
+    else:
+        getMetadata( metapath, args.mode )
+
+def makeMetadata( metapath, playlist ):
+    now = datetime.utcnow().timestamp()
+    files = []
+    data = {
+            'start': now,
+            'files': files
+           }
+
+    with open( playlist ) as fp:
+        for file in fp.read().splitlines():
+
+            id3 = mutagen.File( file )
+            easy = EasyID3( file )
+            artist = easy['artist'][0]
+            title = easy['title'][0]
+            files.append( (float( id3.info.length ), artist, title) )
+
+    with open( metapath, 'w' ) as fp:
+        json.dump( data, fp, indent=2 )
+
+
+
+def getMetadata( metapath, mode ):
+    metapath = Path( metapath )
+
+    with open( metapath ) as fp:
+        meta = json.load( fp )
+
+    # Starting time (unix timestamp) of current track set
+    start = meta['start']
+    # Current time (unix time)
+    now = datetime.utcnow().timestamp()
+
+    # print( f'{int( start % 3600 )} - {int( now  % 3600)}' )
+
+    current = None
+    until = start
+    for (dur, artist, title) in meta['files']:
+        until += dur
+        # print( f'{int( dur )} : {int( until % 3600)} : {title}' )
+        current = (artist, title)
+        if until > now: break
+
+    if not mode:
+        print( f'{current[0]} - {current[1]}' )
+    elif mode == 'artist':
+        print( current[0] )
+    elif mode == 'title':
+        print( current[1] )
+
+
+
+
+    
+if __name__ == "__main__":
+    # print( mp3Info( 'library/music/misc/X-It.mp3' ))
+    main()
+

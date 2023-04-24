@@ -10,6 +10,7 @@ var current = ''  // Current track
 
 // Callback for when icecast metadata changes
 const onMetadata = (metadata) => {
+    if( current == metadata.StreamTitle ) return;
     if( current != '' ) pushRecent( current );
     current = metadata.StreamTitle;
     var artist = current.split( " - " )[0];

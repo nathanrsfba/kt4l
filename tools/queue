@@ -14,34 +14,38 @@ def main():
 
     parser = argparse.ArgumentParser( description=
                                      'Queue a song to play' )
-    parser.add_argument( 
-                        '-s', '--state', 
+    parser.add_argument( '-s', '--state', 
                         default=path / 'configs' / 'state.json',
-                        help="Path to file to save state in between calls"
-                        )
-    parser.add_argument( 
-                        '-r', '--remove', 
+                        help="Path to file to save state in between calls")
+    parser.add_argument( '-r', '--remove', 
                         action='store_true',
-                        help="Remove an item from the queue"
-                        )
-    parser.add_argument( 
-                        '-l', '--list', 
+                        help="Remove an item from the queue")
+    parser.add_argument( '-l', '--list', 
                         action='store_true',
-                        help="List matches without altering queue"
-                        )
-    parser.add_argument( 
-                        '-p', '--position',
-                        help="Position to insert into queue at"
-                        )
-    parser.add_argument( 
-                        '-m', '--move',
-                        help="Move track to position"
-                        )
+                        help="List matches without altering queue")
+    parser.add_argument( '-p', '--position',
+                        help="Position to insert into queue at")
+    parser.add_argument( '-m', '--move',
+                        help="Move track to position")
+    parser.add_argument( '-A', '--artist',
+                        action='append', default=[],
+                        help='Search artist field for keyword')
+    parser.add_argument( '-T', '--title',
+                        action='append', default=[],
+                        help='Search title field for keyword')
+    parser.add_argument( '-L', '--album',
+                        action='append', default=[],
+                        help='Search album field for keyword')
+    parser.add_argument( '-X', '--exclude',
+                        action='append', default=[],
+                        help='Exclude tracks containing keyword')
     parser.add_argument( 'keywords',
                         nargs='*',
-                        help="Keywords of track to queue"
-                        )
+                        help="Keywords of track to queue")
     args = parser.parse_args()
+    # print( args )
+    # exit()
+
     statepath = Path( args.state )
     lockpath = statepath.with_name( statepath.name + ".lock" )
     lock = fasteners.InterProcessLock( lockpath )
@@ -55,7 +59,8 @@ def main():
 
         queue = state.setdefault( 'queue', [] )
 
-        if not args.keywords:
+        if( not args.keywords and not args.artist and 
+           not args.title and not args.album ):
             for i in range( len( queue )):
                 info = state['files'][queue[i]]
                 print( f"{i + 1}: {info['artist']}: {info['title']}" )
@@ -63,25 +68,23 @@ def main():
 
         sel = []
         for file in state['files']:
-            foundall = True
-            for word in args.keywords:
-                word = word.lower()
-                found = False
-                for key in ('artist', 'album', 'title' ):
-                    # print( f"Checking {state['files'][file][key].lower()} vs {word}" )
-                    if state['files'][file][key].lower().find( word ) != -1:
-                        found = True
-                        break
-                if not found:
-                    foundall = False
-                    break
-            if foundall and not state['files'][file]['skip']:
+            info = state['files'][file]
+
+            if not findKeywords( info, ('artist', 'album', 'title'), 
+                               args.keywords ): continue
+            if not findKeywords( info, ('artist',), args.artist ): continue
+            if not findKeywords( info, ('title',), args.title ): continue
+            if not findKeywords( info, ('album',), args.album ): continue
+            if( args.exclude and 
+               findKeywords( info, ('artist', 'album', 'title'), 
+                               args.exclude )): continue
+
+            if not state['files'][file]['skip']:
                 if not args.remove and not args.move:
                     sel.append( file )
                 else:
                     if file in queue:
                         sel.append( file )
-
 
         if len( sel ) > 1 or args.list:
             if not args.list:
@@ -123,10 +126,21 @@ def main():
         with open( statepath, 'w' ) as fp:
             json.dump( state, fp, indent=2 )
 
+def findKeywords( info, fields, words ):
+    """Find a set of keywords in a dict.
 
+    Searches the dict 'info', checking keys in the list 'fields', for the words
+    in the list 'words', case insensitive. All words must be found in at least
+    one field to return a match.
+    """
 
-
-
+    for word in words:
+        word = word.lower()
+        found = False
+        for key in fields:
+            if info[key].lower().find( word ) != -1: found = True
+        if not found: return False
+    return True
 
 if __name__ == "__main__":
     main()

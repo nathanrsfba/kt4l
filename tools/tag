@@ -36,14 +36,21 @@ parser.add_argument( '--no-follow', action='store_true',
 
 opts = parser.parse_args()
 
+fields = ('Start', 'End', 'FadeIn', 'FadeOut', 'Skip', 'Follow')
+print( "%5s %5s %6s %7s %4s %6s File" % fields )
+
 for file in opts.files:
     data = ID3( file )
 
+    changed = False
     def setTag( tag, opt ):
+        global changed
         if opt == '' and f'TXXX:{tag}' in data:
             del data[f'TXXX:{tag}']
+            changed = True
         elif opt:
             data.add( TXXX( desc=tag, text=[opt] ))
+            changed = True
 
     setTag( 'Start', opts.start )
     setTag( 'End', opts.end )
@@ -51,22 +58,27 @@ for file in opts.files:
     setTag( 'FadeOut', opts.fade_out )
 
     def setBoolean( tag, trueVal, falseVal ):
+        global changed
         if trueVal:
             data.add( TXXX( desc=tag, text=['1'] ))
+            changed = True
         if falseVal:
             data.add( TXXX( desc=tag, text=['0'] ))
+            changed = True
 
     setBoolean( 'Skip', opts.skip, opts.no_skip )
     setBoolean( 'Follow', opts.follow, opts.no_follow )
 
-    data.save()
-    print( f'{file}:' )
-    for tag in ('Start', 'End', 'FadeIn', 'FadeOut',
-                'Skip', 'Follow'):
+    if changed: data.save()
+    info = []
+    for tag in fields:
         if f'TXXX:{tag}' in data:
-            print( f'  {tag}: {data[f"TXXX:{tag}"]}' )
+            info.append( data[f"TXXX:{tag}"].text[0] )
         else:
-            print( f'  {tag}: Not set' )
+            info.append( '-' )
+    info.append( file )
+    print( "%5s %5s %6s %7s %4s %6s %s" % tuple( info ))
+    # print( f'{file}: {info}' )
 
 
 

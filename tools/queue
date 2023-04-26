@@ -63,7 +63,7 @@ def main():
            not args.title and not args.album ):
             for i in range( len( queue )):
                 info = state['files'][queue[i]]
-                print( f"{i + 1}: {info['artist']}: {info['title']}" )
+                print( f"{len( queue ) - i}: {info['artist']}: {info['title']}" )
             return
 
         sel = []
@@ -118,14 +118,19 @@ def main():
             queue.remove( sel )
         elif args.move:
             print( f"Moving to position {args.move}: {title}" )
-            queue.remove( sel )
-            queue.insert( int( args.move ) - 1, sel )
+            queue[queue.index( sel )] = None
+            if int( args.move ) == 0:
+                queue.append( sel )
+            else:
+                queue.insert( -int( args.move ), sel )
+            queue.remove( None )
+                
         elif sel in queue:
             print( f"Already in queue: {title}" )
             return
         elif args.position:
             print( f"Queueing at position {args.position}: {title}" )
-            queue.insert( int( args.position ) - 1, sel )
+            queue.insert( -int( args.position ), sel )
         else:
             print( f"Queueing: {title}" )
             queue.append( sel )

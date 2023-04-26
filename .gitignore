@@ -25,3 +25,9 @@ log
 
 # Currently playing file
 current.mp3
+
+# Lock files
+*.lock
+
+# Metadata for current track group
+metadata.json

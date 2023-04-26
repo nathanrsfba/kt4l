@@ -11,6 +11,7 @@ cd "$dir"
 # Call nextrak, get the next track, symlink it to a file, then return that
 
 tools/nextrak > playlist.txt || exit 1
+tools/getmeta -p playlist.txt
 
 ln -sf "`head -1 playlist.txt`" current.mp3
 if [ `wc -l playlist.txt | cut -d ' ' -f 1` = 1 ]; then

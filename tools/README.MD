@@ -117,3 +117,33 @@ This is a lie.
 This script runs nextrak, gets the next track, then symlinks it to a standard
 filename, which ezstream can't choke on.
 
+## queue ##
+
+This script manages the queue of songs to play. Normally nextrak makes a
+(weighted) random selection when picking a track, but this allows you to select
+the next track (or tracks) to play.
+
+The script does a 'keyword' search -- it will individually search for each word
+specified on the command line. All words must be found to trigger a match. By
+default checks artist, title and album for the words. So searching 'pink floyd
+money' will probably do what you expect.
+
+Command line arguments can search specifically for artist (-A), title (-T) or
+album (-L) alone. In unix style, these switches all take a paremeter, and can
+be specified more than once to search for more than one word in the given
+field.
+
+Keywords can be excluded using the -X argument. If any argument to -X is found,
+a track will be rejected as a potential match.
+
+Multiple-word 'keywords' can be specified by enclosing them in quotes, assuming
+you're running it from a POSIX style shell.
+
+Other argument include '-l', which list the files that match, without altering
+the queue, '-r' which *removed* a track from the queue, '-p' which specifies
+where in the queue to add a file, and '-m' which will move a track to another
+position.
+
+Run without arguments, it will display the current queue.
+
+

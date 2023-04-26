@@ -99,6 +99,15 @@ def main():
 
         sel = sel[0]
         info = state['files'][sel]
+        if info['follow']:
+            print( "Found part of group -- finding start..." )
+            while info['follow']:
+                sel = (state['trackindex']
+                       [info['artist']]
+                       [info['album']]
+                       [info['track'] - 2])
+                info = state['files'][sel]
+
         title = f"{info['artist']}: {info['title']}"
 
         if (args.remove or args.move) and (sel not in queue):

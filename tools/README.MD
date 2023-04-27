@@ -117,6 +117,9 @@ This is a lie.
 This script runs nextrak, gets the next track, then symlinks it to a standard
 filename, which ezstream can't choke on.
 
+If nextrak outputs more than one track to play, they will be stored in a file
+called playlist.txt, which the recode script will look for upon decoding.
+
 ## queue ##
 
 This script manages the queue of songs to play. Normally nextrak makes a
@@ -145,5 +148,31 @@ where in the queue to add a file, and '-m' which will move a track to another
 position.
 
 Run without arguments, it will display the current queue.
+
+## recode ##
+
+recode is a script that is responsible for applying effects to MP3 files before
+being encoded for the stream. It is intended to replace the decode step of MP3
+re-encoding (by default madplay) used by ezstream. It expects a path to a file
+to decode, and no other arguments.
+
+recode calls mpg123, applies some effects using sox, then sends the output to
+stdout. These effects include trimming the start and/or end (by passing
+appropriate parameters to mpg123), and fading in or out, as determined by the
+appropriate ID3v2 tags in the input files. It also applies a dynamic range
+compressor, producing an output of even volume.
+
+By default, recode outputs 44.1k, 16 bit signed stereo audio, and expects lame
+to be configured to accept the same. Also, the specific filters applied are
+hardcoded. These can be altered by changing the 'settings' object near the top
+of the script.
+
+Furthermore, if a file called 'playlist.txt' exists in the same directory as
+the supplied MP3 files, then its contents are read, and taken as a list of MP3
+files to decode. They will be passed to mpg123 in a single invocation,
+combining their output as if they were a single file. mpg123's gapless playback
+mode should ensure that the transition between tracks is perfectly smooth.
+nextrak-kludge will intercept the output from nextrak and generate such a
+playlist file as necessary.
 
 

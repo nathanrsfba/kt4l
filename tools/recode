@@ -71,7 +71,8 @@ elif end:
     end = end + length - fileinfo.info.length
 
 # Setup and call the decoder
-args = ["mpg123", 
+kludge = Path( sys.argv[0] ).parent / "mpg123-kludge"
+args = [kludge,
         # "-b", str( settings.width ),
         "-r", str( settings.rate ),
         "--stereo" if settings.channels == 2 else "-m"]
@@ -87,8 +88,7 @@ if end:
 
 
 args.extend( [
-    '--continue',
-    "-s" ] )
+    '--continue' ] )
 
 args.extend( files )
 

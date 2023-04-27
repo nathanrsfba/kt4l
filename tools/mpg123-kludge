@@ -1,0 +1,11 @@
+#!/bin/sh
+
+TMPDIR="`mktemp -td mpg123-XXXXXXXX`"
+FIFO="$TMPDIR/fifo"
+
+mkfifo "$FIFO"
+
+mpg123 -O "$FIFO" "$@" < /dev/null 1>&2 &
+cat "$FIFO"
+
+rm -rf "$TMPDIR"

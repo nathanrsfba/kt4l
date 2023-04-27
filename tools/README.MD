@@ -222,3 +222,22 @@ will display the relevant tags for the files given.
 
 Note that it does not deal with general ID3 tags like artist or title, as there
 are other command line tools for this function.
+
+## mpg123-kludge ##
+
+Another stupid kludge to fix another stupid bug.
+
+mpg123 has the option to send its output to stdout, which this project uses to
+re-encode MP3s.
+
+In mpg123, this function is broken. It displays diagnostic output to stdout.
+Even in quiet mode.
+
+To this end, a frontend has been written to work around this. It creates a
+pipe in /tmp, has mpg123 output to that in the background, sends whatever
+stdout garbage it outputs to stderr, then cats out the pipe, and deletes it.
+
+This script expects the caller not to give it any options on where to output
+the data, and instead prepends an -O option to the start of whatever is given.
+
+I hate everything.

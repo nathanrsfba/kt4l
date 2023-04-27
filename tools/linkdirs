@@ -1,14 +1,16 @@
 #!/bin/sh
 
-LIST=~/tweak.txt
+TAG=radiouse
 BASE=/media/sf_nathanr/Music/Album
 TARGET=~/radiotest/library/music
 
-grep -v '^*' "$LIST" | while read file; do
+find "$BASE" -iname "$TAG" | while read file; do
+    file="`dirname "$file"`"
+    dir="`dirname "$file"`"
     name="`basename "$file"`"
     if [ -e "$TARGET/$name" ]; then
         tpath="`realpath "$TARGET/$name"`"
-        bpath="`realpath "$BASE/$file"`"
+        bpath="`realpath "$file"`"
         if [ "$tpath" = "$bpath" ]; then
             # Already exists, do nothing
             # echo "+ $file"
@@ -18,11 +20,13 @@ grep -v '^*' "$LIST" | while read file; do
             alt="`dirname "$file"`"
             alt="`basename "$alt"` - $name"
             if [ ! -e "$TARGET/$alt" ]; then
-                ln -s "`realpath "$BASE/$file"`" "$TARGET/$alt"
+                echo "$alt"
+                ln -s "`realpath "$file"`" "$TARGET/$alt"
             fi
         fi
     else
         # Doesn't exist, link it
-        ln -s "`realpath "$BASE/$file"`" "$TARGET/$name"
+        echo "$name"
+        ln -s "`realpath "$file"`" "$TARGET/$name"
     fi
 done

@@ -175,4 +175,50 @@ mode should ensure that the transition between tracks is perfectly smooth.
 nextrak-kludge will intercept the output from nextrak and generate such a
 playlist file as necessary.
 
+## getmeta ##
 
+This script serves as an external metadata-retrieval script for EZStream. 
+
+When called from EZStream, it reads the metadata.json file (by default, in the
+radio root directory), figures out what track is currently playing, and returns
+it to EZStream. It accepts the 'artist' and 'title' command arguments as passed
+from EZStream.
+
+When called with the -p option, it reads a list of MP3 tracks from the given
+file, and creates a new metadata.json file. This should be done on each track
+change, and is called as such from nextrak-kludge.
+
+The metadata.json file contains a list of tracks in the current group, along
+with their durations. It also contains the system time (in Unix timestamp
+format) of the time the current group started, and with this information
+calculates the currently playing track based on the system time.
+
+## linkdirs ##
+
+This is a quick and dirty shell script that scans a folder of music, figures
+out what subfolders need to be added to the library, and symlinks them as
+appropriate.
+
+It searches the music folder for any subfolder which as a file called
+'radiouse' in it, and uses the presence of this file to determine what folders
+should be linked to the library. If a symlink to this folder already exists,
+then the folder is ignored. If a symlink with the same name already exists, and
+links to a different folder, an altername symlink name is created from the name
+of the folder, along with the name of the parent folder. This is intended to
+link in folders arranged in artist/album hierarchy, but also takes into account
+the possibility of the same album name from different artists.
+
+The source and target directories, as well as the the indicator file, may be
+configured by changing the variables at the top of the script.
+
+## tag ##
+
+This is a tool to set the various custom ID3 tags used by this project from the
+command line.
+
+Run it with the -h option to see what options it can set, and also see the
+"Radio Management Tags" section in the main README. If no options are given, it
+will display the relevant tags for the files given.
+
+Note that it does not deal with general ID3 tags like artist or title, as there
+are other command line tools for this function.

@@ -15,49 +15,67 @@ chmod o-rw configs/passwd*
 mkdir -p log
 
 start() {
-    # Make config from template
+    if checkicecast; then
+        echo "Icecast already running"
+    else
+        echo "Starting Icecast..."
+        iccfg="`mktemp --suff .xml /tmp/icecast.XXXXXXXX`"
+        tools/cfgtemplate configs/*.cfg < configs/icecast.xml >> "$iccfg"
+        icecast -c "$iccfg" >> log/icecast.log 2>&1 & disown
+        icpid=$!
+        sleep 3
+        echo $icpid > configs/icecast.pid
+    fi
 
-    ezcfg="`mktemp --suff .xml /tmp/ezstream.XXXXXXXX`"
-    tools/cfgtemplate configs/*.cfg < configs/ezstream.xml >> "$ezcfg"
+    if checkezstream; then
+        echo "EZStream already running"
+    else
+        echo "Starting EZStream..."
+        ezcfg="`mktemp --suff .xml /tmp/ezstream.XXXXXXXX`"
+        tools/cfgtemplate configs/*.cfg < configs/ezstream.xml >> "$ezcfg"
 
-    iccfg="`mktemp --suff .xml /tmp/icecast.XXXXXXXX`"
-    tools/cfgtemplate configs/*.cfg < configs/icecast.xml >> "$iccfg"
+        ezstream -c "$ezcfg" >> log/ezstream.log 2>&1 & disown
+        ezpid=$!
 
-    echo "Starting radio server..."
-
-    # Start the apps
-    icecast -c "$iccfg" & disown
-    icpid=$!
-    sleep 3
-    ezstream -c "$ezcfg" & disown
-    ezpid=$!
-
-    echo $icpid > configs/icecast.pid
-    echo $ezpid > configs/ezstream.pid
+        echo $ezpid > configs/ezstream.pid
+    fi
 }
 
 stop() {
-    echo "Stopping radio server..."
+    if checkezstream; then
+        echo "Stopping EZStream..."
+        /bin/kill --timeout 5000 KILL `cat configs/ezstream.pid`
+    else
+        echo "EZStream not running"
+    fi
 
-    /bin/kill --timeout 5000 KILL `cat configs/ezstream.pid`
-    /bin/kill --timeout 5000 KILL `cat configs/icecast.pid`
+    if checkicecast; then
+        echo "Stopping Icecast..."
+        /bin/kill --timeout 5000 KILL `cat configs/icecast.pid`
+    else
+        echo "Icecast not running"
+    fi
+
     rm -f configs/icecast.pid configs/ezstream.pid
 }
 
-check() {
+checkicecast() {
     if [ ! -e configs/icecast.pid ]; then
         return 1
     fi
-    if [ ! -e configs/ezstream.pid ]; then
-        return 1
-    fi
-
     icpid=`cat configs/icecast.pid`
     icname=`ps -p $icpid -o comm --no-headers`
     if [ "$icname" != "icecast" ]; then
         return 1
     fi
 
+    return 0
+}
+
+checkezstream() {
+    if [ ! -e configs/ezstream.pid ]; then
+        return 1
+    fi
     ezpid=`cat configs/ezstream.pid`
     ezname=`ps -p $ezpid -o comm --no-headers`
     if [ "$ezname" != "ezstream" ]; then
@@ -69,30 +87,14 @@ check() {
 
 case $1 in
     ''|start)
-        if check; then
-            echo "Already running"
-            exit 1
-        else
-            start
-        fi
-        ;;
-    stop)
-        if check; then
-            stop
-        else
-            echo "Not running"
-            exit 1
-        fi
-        ;;
-    restart)
-        if check; then
-            stop
-        fi
         start
         ;;
-
-    check)
-        check
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        start
         ;;
 
     *)

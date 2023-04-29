@@ -24,10 +24,17 @@ is expected to be installed on the target server:
 * mpg123
 * sox
 
+It also uses the following Python modules:
+
+* mutagen
+* fasteners
+
 The followng tools and scripts are included in this project:
 
 * nextrak
 * nextrak-kludge
+* recode
+* getmeta
 
 # Overview #
 

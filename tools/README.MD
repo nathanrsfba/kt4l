@@ -81,7 +81,7 @@ structure. It removes any files that don't exist from the database, adds any
 that weren't present on the previous run, and updates the information on any
 that have been changed, or moved to another folder.
 
-It then imports selector.py: This has four functions:
+It defines a class called Selector, which contains the following methods:
 
 readTrack: Called when a track is added or updated in the database. Any
 information that the selector needs (from ID3 tags, etc) should be grabbed here
@@ -98,10 +98,18 @@ This is flexible enough to potentially play certain tracks more often than
 others, insert jingles or ads at particular times, or any number of other
 possibilities.
 
-The selector.py file should contain all the acutal customization, and track
-selection code. Right now, it gives all tracks played in the previous 3 hours a
-low priority (so they're not played), and gives any tracks in the 'deliria'
-subfolder a lower weight.
+The Selector class defined in nextrak does some housekeeping, and implements
+basic functionality. To customize the track selection parameters, a separate
+class is defined in selector.py, and this is where all the acutal customization
+should occur.
+
+The default implementation does the following:
+
+1. It deprioritizes any track that was played in the previous 3 hours
+2. It deprioritizes any artist that was played in the past hour.
+
+This should provide a reasonably not-too-repetetive music selection, and
+demonstrates the basic idea behind customizing playback parameters.
 
 ## nextrak-kludge ##
 

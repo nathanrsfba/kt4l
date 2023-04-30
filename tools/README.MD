@@ -201,6 +201,15 @@ with their durations. It also contains the system time (in Unix timestamp
 format) of the time the current group started, and with this information
 calculates the currently playing track based on the system time.
 
+When called with the -p option, and also called with the -e option, it will
+read the PID of EZStream from the file supplied as an argument, and fork a
+background process, which will send a USR2 signal to EZStream when the metadata
+needs updating. This will cause EZStream to update the metadata properly when
+playing a group of tracks. This is a bit cleaner than having EZStream poll the
+metadata script.  This background process will exit once the current track
+group is finished, or if it detects that the supplied PID file is stale or
+deleted.
+
 ## linkdirs ##
 
 This is a quick and dirty shell script that scans a folder of music, figures

@@ -72,10 +72,10 @@ The pipeline looks something like the following, from the top down:
   Normally nextrak will just pick a single track and output it to stdout for
   EZStream. However, in some cases it may select a group of songs to play
   toghether as if they were a single track. (Imagine the layout of a lot of 70s
-  prog rock albums where several tracks belong toghether.) In either event, it
-  will output the list of tracks to stdout. EZStream has no idea what to do
-  with this, so nextrak-kludge saves these to a file so that scripts can pick
-  them up later.
+  prog rock albums where several tracks belong toghether, such as how Eclipse
+  should invariably follow Brain Damage.) In either event, it will output the
+  list of tracks to stdout. EZStream has no idea what to do with this, so
+  nextrak-kludge saves these to a file so that scripts can pick them up later.
 
   The selection logic of nextrak lives in a separate file called selector.py.
   This is where any customizations to the selection algorithm should be made.
@@ -89,9 +89,10 @@ The pipeline looks something like the following, from the top down:
 
   recode does a few things: 
 
-  * First of all, if multiple tracks were selected in the previous steps, it
-    sends them all to mpg123 in a single invocation.  mpg123's gapless playback
-    ensures they will be concatenated smoothly.
+  * First of all, it sends the tracks to mpg123 (rather than madplay) for
+    decoding. If multiple tracks were selected in the previous steps, it sends
+    them all to mpg123 in a single invocation.  mpg123's gapless playback
+    feature (which madplay lacks) ensures they will be concatenated smoothly.
   * Next, it checks the ID3 tags for some custom tags telling it to trim the
     start and/or end of the file, and to fade it in and/or out at the start and
     end. It does the former by passing the appropriate parameters to mpg123 to
@@ -112,7 +113,13 @@ The pipeline looks something like the following, from the top down:
   that multiple tracks are being played, as nextrak and recode hide this magic
   'behind the curtain'. getmeta figures which track is currently playing, based
   on the current system time, the time the group started, and the duration of
-  the songs. EZStream is configured to query this script once every 5 seconds. 
+  the songs.
+
+  getmeta has an option to, under such conditions, send a signal to EZStream
+  when the metadata needs updating. nextrak-kludge takes care of passing this
+  option to getmeta when a track changes.
+
+  nextrak-kludge calls getmeta
 
 * This process then repeats for the next track.
 

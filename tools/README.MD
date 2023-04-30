@@ -157,6 +157,9 @@ position.
 
 Run without arguments, it will display the current queue.
 
+Queue exits with an exit code of 0 if the requested operation was successful,
+otherwise 1.
+
 ## recode ##
 
 recode is a script that is responsible for applying effects to MP3 files before

@@ -23,16 +23,16 @@ class Selector( nextrak.Selector ):
     def weighTrack( self, track, state ):
         (priority, weight) = super().weighTrack( track, state )
         info = state['files'][track]
+        if priority >= 0:
+            # If a track has been played in the last 3 hours, don't play it
+            if( info['lastplay'] != None and 
+               info['lastplay'] + (3 * hour) > state['time'] ):
+                priority += 100
 
-        # If a track has been played in the last 3 hours, don't play it
-        if( info['lastplay'] != None and 
-           info['lastplay'] + (3 * hour) > state['time'] ):
-            priority += 100
-
-        # If an artist has been played in the last 60 mins, don't play it
-        if( info['artist'] in state.setdefault( 'artistlast', {} ) and
-           state['artistlast'][info['artist']] + (60 * minute) > state['time'] ):
-            priority += 90
+            # If an artist has been played in the last 60 mins, don't play it
+            if( info['artist'] in state.setdefault( 'artistlast', {} ) and
+               state['artistlast'][info['artist']] + (60 * minute) > state['time'] ):
+                priority += 90
 
         return (priority, weight)
 

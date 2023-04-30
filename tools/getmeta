@@ -1,7 +1,10 @@
 #!/usr/bin/python3
 
-import json
 import sys
+import os
+import signal
+import time
+import json
 from pathlib import Path
 from datetime import datetime
 import argparse
@@ -10,6 +13,8 @@ import mutagen
 from mutagen.easyid3 import EasyID3
 
 def main():
+    """Get command line arguments and call the appropriate function."""
+
     # Figure out the root of the 'radio' directory (assumes this script is
     # located in the 'tools' directory of said directory) to work out default
     # paths
@@ -17,30 +22,46 @@ def main():
 
     parser = argparse.ArgumentParser( description=
                                      'Provide metadata for current point in time' )
-    parser.add_argument( 
-                        '-p', '--playlist', 
+    parser.add_argument( '-p', '--playlist', 
                         default=None,
-                        help="Create metadata info for current set of tracks"
-                        )
-    parser.add_argument( 
-                        '-m', '--metadata',
+                        help="Create metadata info for current set of tracks")
+    parser.add_argument( '-m', '--metadata',
                         default=path / 'metadata.json',
-                        help="File to create/retrieve metadata from"
-                        )
-    parser.add_argument( 
-                        'mode',
+                        help="File to create/retrieve metadata from")
+    parser.add_argument( '-e', '--ezstream-pid-file',
+                        help="Spawn a background process to signal the given " + 
+                        "EZStream process on metadata updates" )
+    parser.add_argument( 'mode',
                         nargs='?',
-                        help="Type of metadata to retrieve"
-                        )
+                        help="Type of metadata to retrieve")
     args = parser.parse_args()
     metapath = Path( args.metadata )
 
     if args.playlist:
-        makeMetadata( metapath, args.playlist )
+        data = makeMetadata( metapath, args.playlist )
+        if args.ezstream_pid_file:
+            signaller( args.ezstream_pid_file, data )
     else:
         getMetadata( metapath, args.mode )
 
 def makeMetadata( metapath, playlist ):
+    """Generate metadata for the current song list.
+
+    This will extract the metadata from the tracks in the given playlist file,
+    and save it to a JSON file. This is called when nextrak has specified
+    multiple tracks that should be played sequentially as a group.
+
+    The metadata is a dict containing the following:
+
+    start: The time (real time, in UNIX format) the playlist started playing.
+    files: A list of tuples, each of which contain the length of the track in
+        seconds, followed by the artist, and finally the title.
+
+    Return:
+    The generated metadata dict.
+    """
+    
+
     now = datetime.utcnow().timestamp()
     files = []
     data = {
@@ -60,9 +81,23 @@ def makeMetadata( metapath, playlist ):
     with open( metapath, 'w' ) as fp:
         json.dump( data, fp, indent=2 )
 
+    return data
+
 
 
 def getMetadata( metapath, mode ):
+    """Get the currently playing song.
+
+    This will read the current metadata information, figure out which song is
+    playing, and return its metadata.
+
+    metapath: Path to the metadata.json file generated earlier with the -p
+        parameter.
+    mode: What data to return. EZStream may send 'artist' or 'title' here to
+        get that particular bit of information, or nothing, in which case this will
+        return the file's metadata in a sensible format.
+    """
+
     metapath = Path( metapath )
 
     with open( metapath ) as fp:
@@ -90,11 +125,45 @@ def getMetadata( metapath, mode ):
     elif mode == 'title':
         print( current[1] )
 
+def signaller( pidfile, data ):
+    """Signal changes in metadata to EZStream in the background.
+
+    This forks off a background process which sleeps and periodically sends a
+    USR2 signal to EZStream when the metadata needs to be updated.
+
+    pidfile: Path to the EZStream .pid file. This should contain a single line
+        with the PID of EZStream. If this file is changed or removed, this process
+        will exit without signalling EZStream after the current timeout ends.
+    data: The metadata generated prior to calling this function
+    """
+
+    # If there's only one file being played, this is not needed.
+    if len( data['files'] ) <= 1: return
+
+    if os.fork(): return
+
+    pid = getpid( pidfile )
+    time.sleep( 1 )
+    for (length, artist, title) in data['files'][0:-1]:
+        time.sleep( length )
+        if getpid( pidfile ) != pid: return
+        print( f"Signalling for {artist} - {title}" )
+        os.kill( pid, signal.SIGUSR2 )
 
 
+def getpid( pidfile ):
+    """Get the pid of a process held in a file.
 
+    Return:
+    The number in the first line of the given file, as an integer, or None if
+    the file doesn't exist.
+    """ 
+
+    path = Path( pidfile )
+    if not path.exists(): return None
+    with open( path ) as fp:
+        return int( fp.read().splitlines()[0] )
     
 if __name__ == "__main__":
-    # print( mp3Info( 'library/music/misc/X-It.mp3' ))
     main()
 

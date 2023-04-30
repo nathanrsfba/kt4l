@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Get base directory
+
+dir="`realpath "$0"`"
+dir="`dirname "$dir"`"
+dir="`dirname "$dir"`"
+
+cd "$dir"
+
+if [ -e configs/ezstream.pid ]; then
+    kill -USR1 "`cat configs/ezstream.pid`"
+fi
+

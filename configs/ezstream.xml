@@ -22,7 +22,7 @@
     <playlist_program>1</playlist_program>
 
     <metadata_progname>%BASEDIR%/tools/getmeta</metadata_progname>
-    <metadata_refreshinterval>5</metadata_refreshinterval>
+    <!-- <metadata_refreshinterval>5</metadata_refreshinterval> -->
 
     <!--
       The following settings are used to describe your stream to the server.

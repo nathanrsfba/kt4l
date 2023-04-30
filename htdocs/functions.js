@@ -87,7 +87,7 @@ function setVol( newVal )
     volume = Math.floor( newVal );
     if( volume > 100 ) volume = 100;
     if( volume < 0 ) volume = 0;
-    player.audioElement.volume = volume / 100;
+    player.audioElement.volume = (volume / 100) ** 2;
 
     // console.log(volume)
     const vwidth = WIDTH - 12;

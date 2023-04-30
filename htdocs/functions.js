@@ -174,6 +174,7 @@ const player =
 	}
     );
 
+setVol( 50 )
 
 var stage = document.getElementById( 'volctl' ); // Volume slider canvas
 var dragging = false; // Are we currently dragging the volume slider?

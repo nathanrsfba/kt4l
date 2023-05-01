@@ -66,39 +66,47 @@ def main():
                 print( f"{len( queue ) - i}: {info['artist']}: {info['title']}" )
             return 0
 
-        sel = []
-        for file in state['files']:
-            info = state['files'][file]
+        if( args.move or args.remove and
+            (len( args.keywords ) == 1 and args.keywords[0].isdecimal()) ):
+            index = int( args.keywords[0] )
+            if index > len( state['queue'] ):
+                print( f"Position out of range: {index}" )
+                return 1
+            sel = state['queue'][-index]
+        else:
+            sel = []
+            for file in state['files']:
+                info = state['files'][file]
 
-            if not findKeywords( info, ('artist', 'album', 'title'), 
-                               args.keywords ): continue
-            if not findKeywords( info, ('artist',), args.artist ): continue
-            if not findKeywords( info, ('title',), args.title ): continue
-            if not findKeywords( info, ('album',), args.album ): continue
-            if( args.exclude and 
-               findKeywords( info, ('artist', 'album', 'title'), 
-                               args.exclude )): continue
+                if not findKeywords( info, ('artist', 'album', 'title'), 
+                                   args.keywords ): continue
+                if not findKeywords( info, ('artist',), args.artist ): continue
+                if not findKeywords( info, ('title',), args.title ): continue
+                if not findKeywords( info, ('album',), args.album ): continue
+                if( args.exclude and 
+                   findKeywords( info, ('artist', 'album', 'title'), 
+                                   args.exclude )): continue
 
-            if not state['files'][file]['skip']:
-                if not args.remove and not args.move:
-                    sel.append( file )
-                else:
-                    if file in queue:
+                if not state['files'][file]['skip']:
+                    if not args.remove and not args.move:
                         sel.append( file )
+                    else:
+                        if file in queue:
+                            sel.append( file )
 
-        if len( sel ) > 1 or args.list:
-            if not args.list:
-                print( "Multiple matching items:" )
-            for item in sel:
-                info = state['files'][item]
-                print( f"{info['artist']}: {info['title']}" )
-            if args.list: return 0
-            return 1
-        if len( sel ) == 0:
-            print( "No matches" )
-            return 1
+            if len( sel ) > 1 or args.list:
+                if not args.list:
+                    print( "Multiple matching items:" )
+                for item in sel:
+                    info = state['files'][item]
+                    print( f"{info['artist']}: {info['title']}" )
+                if args.list: return 0
+                return 1
+            if len( sel ) == 0:
+                print( "No matches" )
+                return 1
 
-        sel = sel[0]
+            sel = sel[0]
         info = state['files'][sel]
         if info['follow']:
             print( "Found part of group -- finding start..." )

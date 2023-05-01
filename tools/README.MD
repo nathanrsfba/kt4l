@@ -155,6 +155,16 @@ the queue, '-r' which *removed* a track from the queue, '-p' which specifies
 where in the queue to add a file, and '-m' which will move a track to another
 position.
 
+Note that tracks in the queue are numbered in *descending* order. This keeps
+the positions "stable" -- a tracks position number will remain unchanged even
+as tracks are popped off the top of the queue and played. Note also that the
+position specified with the '-p' or '-m' arguments causes the track to be
+placed before the track currently occupying that position. For the '-m'
+argument, a position of '0' moves a track to the bottom of the queue.
+
+When using the '-m' and '-r' arguments, you can specify the position of a track
+in the queue in place of keywords.
+
 Run without arguments, it will display the current queue.
 
 Queue exits with an exit code of 0 if the requested operation was successful,

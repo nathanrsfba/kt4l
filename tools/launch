@@ -59,6 +59,20 @@ stop() {
     rm -f configs/icecast.pid configs/ezstream.pid
 }
 
+status() {
+    if checkicecast; then
+        echo "Icecast running"
+    else
+        echo "Icecst not running"
+    fi
+
+    if checkezstream; then
+        echo "EZStream running"
+    else
+        echo "EZStream not running"
+    fi
+}
+
 checkicecast() {
     if [ ! -e configs/icecast.pid ]; then
         return 1
@@ -96,9 +110,12 @@ case $1 in
         stop
         start
         ;;
+    status)
+        status
+        ;;
 
     *)
-        echo "Usage: $0 [start|stop|restart]"
+        echo "Usage: $0 [start|stop|restart|status]"
         exit 1
         ;;
 

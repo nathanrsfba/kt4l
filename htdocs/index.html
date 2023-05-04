@@ -9,25 +9,24 @@
     </head>
     <body class="main">
 
-	<pre class="player">
-<span class="border">&#x2554;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550&#x2566;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2561;</span><span class="titlebar"> KT4L </span><span class="border">&#x255e;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2557;</span>
-<span class="border">&#x2551;</span><span id="playing" onClick="playPause()">  &#x25ba;  </span><span class="border">&#x2551;</span> <span class="volbtn" onClick="changeVol(-5)"> &#x25bc; </span> <span id="volume"><canvas id="volctl"></canvas><span id="volslid">&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x256a;</span></span> <span class="volbtn" onClick="changeVol(5)"> &#x25b2; </span> <span class="border">&#x2551;</span>
-<span class="border">&#x2560;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2569;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2563;</span>
-<span class="border">&#x2551;</span>                                              <span class="border">&#x2551;</span>
-<span class="border">&#x2551;</span> <span id="artist">                                            </span> <span class="border">&#x2551;</span>
-<span class="border">&#x2551;</span> <span id="title">                                            </span> <span class="border">&#x2551;</span>
-<span class="border">&#x2551;</span>                                              <span class="border">&#x2551;</span>
-<span class="border">&#x2551;</span>  <span id="recenthead">                                          </span>  <span class="border">&#x2551;</span>
-<span class="border">&#x2551;</span>  <span id="recent1">                                          </span>  <span class="border">&#x2551;</span>
-<span class="border">&#x2551;</span>  <span id="recent2">                                          </span>  <span class="border">&#x2551;</span>
-<span class="border">&#x2551;</span>  <span id="recent3">                                          </span>  <span class="border">&#x2551;</span>
-<span class="border">&#x2551;</span>                                              <span class="border">&#x2551;</span>
-<span class="border">&#x2551;</span> <span id="listeners">                                           </span>  <span class="border">&#x2551;</span>
-<span class="border">&#x2551;</span>                                              <span class="border">&#x2551;</span>
-<span class="border">&#x255a;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x255d;</span>
-</pre>
-
-This is just a bunch of my music collection, slightly curated, shovelled into a playlist, and puree'd.
-
+        <div id="player">
+            <div class="heading">Radio KT4L</div>
+            <div class="controls">
+                <button id="playing" onClick="playPause()"><img id="playicon" src="play.svg" width="8" height="16"></button>
+                <input id="volume" type="range" min="0" max="100">
+            </div>
+            <div class="playing">
+                <div id="playinglabel"></div>
+                <div id="artist"></div>
+                <div id="title"></div>
+            </div>
+            <div class="recents">
+                <div id="recentlabel"></div>
+                <div id="recent1"></div>
+                <div id="recent2"></div>
+                <div id="recent3"></div>
+            </div>
+            <div id="listeners"></div>
+        </div>
     </body>
 </html>

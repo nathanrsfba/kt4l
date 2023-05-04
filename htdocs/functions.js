@@ -15,10 +15,9 @@ const onMetadata = (metadata) => {
     current = metadata.StreamTitle;
     var artist = current.split( " - " )[0];
     var title  = current.split( " - " )[1];
-    document.getElementById("artist").innerHTML = 
-	` ${artist.padEnd( WIDTH + 1 )}`;
-    document.getElementById("title").innerHTML  = 
-	` ${title.padEnd( WIDTH + 1 )}`;
+    document.getElementById( "playinglabel" ).innerHTML = "Now Playing:";
+    document.getElementById( "artist" ).innerHTML = artist;
+    document.getElementById( "title" ).innerHTML = title;
     document.title = `${metadata.StreamTitle} [${SITE}]`;
     if( "mediaSession" in navigator ) 
     {
@@ -35,7 +34,7 @@ function pushRecent( track )
 {
     if( track == '' ) return;
 
-    document.getElementById( "recenthead" ).innerHTML = 
+    document.getElementById( "recentlabel" ).innerHTML = 
 	"Recently played: ".padEnd( WIDTH );
     recent1 = document.getElementById( "recent1" );
     recent2 = document.getElementById( "recent2" );
@@ -43,16 +42,16 @@ function pushRecent( track )
 
     recent3.innerHTML = recent2.innerHTML;
     recent2.innerHTML = recent1.innerHTML;
-    recent1.innerHTML = track.substring( 0, WIDTH ).padEnd( WIDTH );
+    recent1.innerHTML = track;
 }
 
 // Clear the Recents list
 function clearRecent()
 {
-    document.getElementById( "recenthead" ).innerHTML = ' '.repeat( WIDTH );
+    document.getElementById( "recentlabel" ).innerHTML = "";
     for( var i = 0; i < 3; i++ )
     {
-	document.getElementById( `recent${i + 1}` ).innerHTML = ' '.repeat( WIDTH );
+	document.getElementById( `recent${i + 1}` ).innerHTML = "";
     }
 }
 
@@ -93,13 +92,11 @@ function setVol( newVal )
     const vwidth = WIDTH - 12;
     if( volume == 0 )
     {
-	document.getElementById( "volslid" ).innerHTML = " AUDIO MUTED".padEnd( vwidth );
+	// document.getElementById( "volslid" ).innerHTML = " AUDIO MUTED".padEnd( vwidth );
     }
     else
     {
-        var ptr = Math.floor( volume * (vwidth - 1) / 100 );
-	document.getElementById( "volslid" ).innerHTML = 
-	    `${"&#x2550;".repeat( ptr )}&#x256a;${"&#x2550;".repeat( vwidth - ptr - 1 )}`;
+	document.getElementById( "volume" ).value = newVal;
     }
 }
 
@@ -109,8 +106,8 @@ function playPause()
     console.log( "We're in PlayPause" );
     if( player.state == "stopped" )
     {
-	document.getElementById( "playing" ).innerHTML = "  &#x258c;&#x258c; ";
-	document.getElementById( "artist" ).innerHTML = "  Loading..." + " ".repeat( WIDTH - 10 );
+	document.getElementById( "playicon" ).src = "pause.svg";
+	document.getElementById( "playinglabel" ).innerHTML = "Loading...";
 	if( "mediaSession" in navigator ) 
 	{
 	    navigator.mediaSession.metadata = new MediaMetadata({
@@ -125,9 +122,10 @@ function playPause()
     }
     if( player.state == "playing" )
     {
-	document.getElementById( "playing" ).innerHTML = "  &#x25ba;  ";
-	document.getElementById( "artist" ).innerHTML = " ".repeat( WIDTH + 2 );
-	document.getElementById( "title" ).innerHTML = " ".repeat( WIDTH + 2 );
+	document.getElementById( "playicon" ).src = "play.svg";
+	document.getElementById( "playinglabel" ).innerHTML = "";
+	document.getElementById( "artist" ).innerHTML = "";
+	document.getElementById( "title" ).innerHTML = "";
 	document.title = `[${SITE}]`;
 	player.stop();
 	pushRecent( current );
@@ -147,7 +145,7 @@ function updateStats() {
 	    var stats = xhr.response;
 	    var listeners = stats.icestats.source.listeners;
 	    document.getElementById( "listeners" ).innerHTML = 
-		` Current Listeners: ${String( listeners ).padEnd( WIDTH - 19 )}`;
+		` Current Listeners: ${String( listeners )}`;
 	    // console.log( stats );
 	} 
 	else 
@@ -176,62 +174,19 @@ const player =
 
 setVol( 50 )
 
-var stage = document.getElementById( 'volctl' ); // Volume slider canvas
-var dragging = false; // Are we currently dragging the volume slider?
-
-// Start dragging and set volume when slider clicked
-stage.addEventListener( "mousedown", function( e ) {
-    dragging = true;
-    sliderClick( e );
-}, true );
-
-// Stop dragging when mouse released
-stage.addEventListener( "mouseup", function( e ) {
-    dragging = false;
-}, true );
-
-// Stop dragging when mouse leaves slider
-stage.addEventListener( "mouseout", function( e ) {
-    dragging = false;
-}, true );
-
-// Start dragging if mouse enters slider with buttons pressed
-stage.addEventListener( "mouseover", function( e ) {
-    if( e.buttons != 0 ) dragging = true;
-}, true );
-
-// Set volume if dragging over slider
-stage.addEventListener( "mousemove", function( e ){
-    if( !dragging ) return;
-
-    sliderClick( e );
-});
-
-// Actually set volume when slider is clicked/dragged
-function sliderClick( e ) 
-{
-    var context = stage.getContext( '2d' );
-    if( !e ) e = window.event;
-    var ctx = stage.getContext( "2d" );
-    var x = e.offsetX == undefined ? e.layerX : e.offsetX;
-    var slider = document.getElementById( 'volslid' );
-    var width = stage.getBoundingClientRect().width;
-    /*
-	var left = Math.floor( x * 30 / width );
-	var right = 29 - left;
-	if( right < 0 ) right = 0;
-	volslid.innerHTML = "=".repeat( left ) + "|" + "-".repeat( right );
-	*/
-    setVol( x * 100 / width );
-    // player.audioElement.volume = volume / 100;
-}
-
 // Bind media player keys to stream control
 if( "mediaSession" in navigator ) 
 {
     navigator.mediaSession.setActionHandler( "play", () => { playPause(); } );
     navigator.mediaSession.setActionHandler( "pause", () => { playPause(); } );
     navigator.mediaSession.setActionHandler( "stop", () => { playPause(); } );
+}
+
+// Bind volume slider
+{
+    var input = document.getElementById( "volume" );
+    input.addEventListener("input", (event) => {
+        setVol( Number( event.target.value )) } );
 }
 
 // Set up stats update callback

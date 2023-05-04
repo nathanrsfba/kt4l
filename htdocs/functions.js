@@ -1,7 +1,4 @@
 const SITE = "KT4L";  // Site title
-const WIDTH = 42;              // Player width in chars
-/* Note that this is the width, minus the side borders, and minus 2 spaces on
- * each side. Code will adjust as necessary */
 const STREAMURL = "/radio2/stream";       // Stream URL
 const STATURL = "/radio2/status-json.xsl" // Status URL
 
@@ -103,7 +100,7 @@ function setVol( newVal )
 // Start or stop the audio
 function playPause()
 {
-    console.log( "We're in PlayPause" );
+    // console.log( "We're in PlayPause" );
     if( player.state == "stopped" )
     {
 	document.getElementById( "playicon" ).src = "pause.svg";
@@ -116,7 +113,7 @@ function playPause()
 		album: SITE
 	    });
 	}
-        console.log( "Starting player..." );
+        // console.log( "Starting player..." );
 	player.play();
 	clearRecent();
     }

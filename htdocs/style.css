@@ -94,3 +94,16 @@ body {
     border-left: 1px solid black;
     border-right: 1px solid black;
 }
+
+#playingbox,
+#recentbox {
+    display: none;
+}
+
+#playingbox.visible,
+#recentbox.visible {
+    display: block;
+}
+
+
+

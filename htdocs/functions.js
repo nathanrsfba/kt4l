@@ -45,6 +45,8 @@ function pushRecent( track )
     recent3.innerHTML = recent2.innerHTML;
     recent2.innerHTML = recent1.innerHTML;
     recent1.innerHTML = track;
+
+    document.getElementById( "recentbox" ).classList.add( "visible" );
 }
 
 // Clear the Recents list
@@ -55,6 +57,7 @@ function clearRecent()
     {
 	document.getElementById( `recent${i + 1}` ).innerHTML = "";
     }
+    document.getElementById( "recentbox" ).classList.remove( "visible" );
 }
 
 // Callback for when keys pressed, to implement keyboard shortcuts
@@ -119,6 +122,7 @@ function playPause()
 	}
         // console.log( "Starting player..." );
 	player.play();
+        document.getElementById( "playingbox" ).classList.add( "visible" );
 	clearRecent();
     }
     if( player.state == "playing" )
@@ -129,6 +133,7 @@ function playPause()
 	document.getElementById( "title" ).innerHTML = "";
 	document.title = `[${SITE}]`;
 	player.stop();
+        document.getElementById( "playingbox" ).classList.remove( "visible" );
 	pushRecent( current );
 	current = "";
     }

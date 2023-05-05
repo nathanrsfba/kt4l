@@ -43,6 +43,8 @@ The followng tools and scripts are included in this project:
 * recode
 * getmeta
 
+Also included is Icecast Metadata Player v1.14.3, used for the web plaer.
+
 # Installation #
 
 1. Install the requisite software and modules listed above

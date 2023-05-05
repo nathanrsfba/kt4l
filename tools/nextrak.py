@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import json
-import random
 import sys
 import math
 from pathlib import Path
@@ -11,6 +10,10 @@ import importlib
 import mutagen
 from mutagen.easyid3 import EasyID3
 import fasteners
+
+#import random
+from random import SystemRandom
+random = SystemRandom()
 
 # How you know a python coder started out life coding C...
 def main():

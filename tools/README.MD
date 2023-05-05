@@ -272,3 +272,9 @@ This script expects the caller not to give it any options on where to output
 the data, and instead prepends an -O option to the start of whatever is given.
 
 I hate everything.
+
+
+## reject ##
+
+A quick and dirty shell script that sends a USR1 to the running EZStream
+process to skip to the next track

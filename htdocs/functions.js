@@ -1,6 +1,11 @@
 const SITE = "KT4L";  // Site title
-const STREAMURL = "/radio2/stream";       // Stream URL
-const STATURL = "/radio2/status-json.xsl" // Status URL
+const ICECASTURL = "/radio"; // Base Icecast URL
+// If you're not reverse-proxying the Icecast server, it will look
+// something like the following:
+// const ICECASTURL = "http://somedomain.com:someport";
+
+const STREAMURL = `${ICECASTURL}/stream`;       // Stream URL
+const STATURL = `${ICECASTURL}/status-json.xsl` // Status URL
 
 var volume = 100; // Current volume, 0-100
 var current = ''  // Current track
@@ -32,7 +37,7 @@ function pushRecent( track )
     if( track == '' ) return;
 
     document.getElementById( "recentlabel" ).innerHTML = 
-	"Recently played: ".padEnd( WIDTH );
+	"Recently played: ";
     recent1 = document.getElementById( "recent1" );
     recent2 = document.getElementById( "recent2" );
     recent3 = document.getElementById( "recent3" );
@@ -86,7 +91,6 @@ function setVol( newVal )
     player.audioElement.volume = (volume / 100) ** 2;
 
     // console.log(volume)
-    const vwidth = WIDTH - 12;
     if( volume == 0 )
     {
 	// document.getElementById( "volslid" ).innerHTML = " AUDIO MUTED".padEnd( vwidth );

@@ -1,13 +1,17 @@
 # KT4L #
 
-A horribly overengineered, homegrown music broadcasting system, grown out of the Deliria project
+A horribly overengineered, homegrown music broadcasting system, grown out of
+the Deliria project
 
 # Structure #
+#
 The following folders will be found here:
 
-* htdocs: Contains the web content that appears in the root of the web site. Apache (or whatever) should use this as the web root.
+* htdocs: Contains the web content that appears in the root of the web site.
+  Apache (or whatever) should use this as the web root.
 * configs: Configuration files for stuff like icecast and ezstream
-* tools: Miscellaneous shell scripts and other tools for managing the station
+* tools: Miscellaneous shell scripts and other tools for managing the station.
+  There is also a README file here documenting the individual tools.
 
 Other stuff that lives here but isn't under version control:
 * library: Music library, presumably in the form of MP3 files
@@ -24,6 +28,9 @@ is expected to be installed on the target server:
 * mpg123
 * sox
 
+It also uses Perl, Python3 and Bash for scripting, but doesn't that come
+standard nowadays?
+
 It also uses the following Python modules:
 
 * mutagen
@@ -35,6 +42,31 @@ The followng tools and scripts are included in this project:
 * nextrak-kludge
 * recode
 * getmeta
+
+# Installation #
+
+1. Install the requisite software and modules listed above
+2. Drop all these files into a directory on your server. The default configs
+   expect it in /srv/kt4l but you can change this.
+3. Set some passwords in configs/passwd.cfg.new, set it to **not
+   world-readable**, and rename it to passwd.cfg
+4. Edit settings.cfg, ezstream.xml, and icecast.xml and set the settings
+   appropriate to your setup
+5. Make (or symlink) a directory called 'library' that has music in it
+6. Run `tools/nextrak -u` to set up the database
+7. To enable the web player, place the contents of htdocs into a folder on your
+   web server, and edit functions.js to point to the Icecast server.
+
+   Included in configs is an httpd.conf that sets up /srv/kt4l/htdocs as the
+   web root, and reverse-proxies /radio to the localhost on port 7777 (the
+   default port in the settings.) functions.js by default takes advantage of
+   this setup. If you want to keep such a setup, edit httpd.conf with settings
+   appropriate to your setup (and match the other settings in this setup), then
+   include it from your main Apache confing.
+8. The server should be ready to start. Run the tools/launch script to start
+   it. launch takes RC-style 'start', 'stop', and 'restart' parameters (as well
+   as 'status') and can be symlinked into an RC folder, and it should figure
+   out what it needs to do.
 
 # Overview #
 

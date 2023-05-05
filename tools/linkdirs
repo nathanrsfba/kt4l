@@ -2,7 +2,7 @@
 
 TAG=radiouse
 BASE=/media/sf_nathanr/Music/Album
-TARGET=~/radiotest/library/music
+TARGET=/srv/kt4l/library/music
 
 find "$BASE" -iname "$TAG" | while read file; do
     file="`dirname "$file"`"

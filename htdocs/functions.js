@@ -1,14 +1,26 @@
-const SITE = "KT4L";  // Site title
+var SITE = "KT4L";  // Site title
 const ICECASTURL = "/radio"; // Base Icecast URL
 // If you're not reverse-proxying the Icecast server, it will look
 // something like the following:
 // const ICECASTURL = "http://somedomain.com:someport";
 
-const STREAMURL = `${ICECASTURL}/stream`;       // Stream URL
-const STATURL = `${ICECASTURL}/status-json.xsl` // Status URL
+var STREAMURL = `${ICECASTURL}/stream`;       // Stream URL
+var STATURL = `${ICECASTURL}/status-json.xsl` // Status URL
+
+// If you want the player to support multiple stations, add them here, and the
+// player titlebar will be converted to a dropdown that allows station selection.
+
+var stations = [
+    /*
+    { id: "kt4l", name: "Radio KT4L", url: "/radio/stream", stats: "/radio/status-json.xsl" },
+    { id: "deliria", name: "Deliria Radio", url: "/radio2/stream", stats: "/radio2/status-json.xsl" }
+    */
+
+];
 
 var volume = 100; // Current volume, 0-100
 var current = ''  // Current track
+var player = null;
 
 // Callback for when icecast metadata changes
 const onMetadata = (metadata) => {
@@ -104,11 +116,28 @@ function setVol( newVal )
     }
 }
 
-// Start or stop the audio
-function playPause()
+// Pause the audio
+function pause()
 {
     // console.log( "We're in PlayPause" );
-    if( player.state == "stopped" )
+    if( player.state != "stopped" )
+    {
+	document.getElementById( "playicon" ).src = "play.svg";
+	document.getElementById( "playinglabel" ).innerHTML = "";
+	document.getElementById( "artist" ).innerHTML = "";
+	document.getElementById( "title" ).innerHTML = "";
+	document.title = `[${SITE}]`;
+	player.stop();
+        document.getElementById( "playingbox" ).classList.remove( "visible" );
+	pushRecent( current );
+	current = "";
+    }
+}
+
+// Start the audio
+function play()
+{
+    if( player.state != "playing" )
     {
 	document.getElementById( "playicon" ).src = "pause.svg";
 	document.getElementById( "playinglabel" ).innerHTML = "Loading...";
@@ -125,17 +154,19 @@ function playPause()
         document.getElementById( "playingbox" ).classList.add( "visible" );
 	clearRecent();
     }
-    if( player.state == "playing" )
+}
+
+// Play or Pause the audio
+function playPause()
+{
+    // console.log( "We're in PlayPause" );
+    if( player.state == "stopped" )
     {
-	document.getElementById( "playicon" ).src = "play.svg";
-	document.getElementById( "playinglabel" ).innerHTML = "";
-	document.getElementById( "artist" ).innerHTML = "";
-	document.getElementById( "title" ).innerHTML = "";
-	document.title = `[${SITE}]`;
-	player.stop();
-        document.getElementById( "playingbox" ).classList.remove( "visible" );
-	pushRecent( current );
-	current = "";
+        play();
+    }
+    else
+    {
+        pause();
     }
 }
 
@@ -168,15 +199,45 @@ function onPlay()
     updateStats();
 }
 
-// Initialize player
-const player = 
-    new IcecastMetadataPlayer( STREAMURL,
-	{ 
-	    metadataTypes: ["icy", "ogg"],
-	    onMetadata,
-	    onPlay
-	}
-    );
+// Callback when selecting a station
+function selectStation()
+{
+    select = document.getElementById( "station" );
+    index = select.selectedIndex;
+
+    if( index < 0 ) return;
+
+    pause();
+
+    SITE = stations[index].name;
+    STREAMURL = stations[index].url;
+    STATURL = stations[index].stats;
+
+    initPlayer();
+    updateStats();
+
+    document.title = SITE;
+    if( index > 0 || window.location.hash != "" )
+    {
+        window.location.hash = stations[index].id;
+    }
+}
+
+// Initialize (or re-initialize) player
+function initPlayer()
+{
+    player = 
+        new IcecastMetadataPlayer( STREAMURL,
+            { 
+                metadataTypes: ["icy", "ogg"],
+                onMetadata,
+                onPlay
+            }
+        );
+    changeVol( 0 );
+}
+
+initPlayer();
 
 setVol( 50 )
 
@@ -193,6 +254,40 @@ if( "mediaSession" in navigator )
     var input = document.getElementById( "volume" );
     input.addEventListener("input", (event) => {
         setVol( Number( event.target.value )) } );
+}
+
+// Set up stations list, if needed
+if( stations.length > 1 )
+{
+    titlebar = document.getElementById( "stationtitle" );
+    titlebar.innerHTML = "";
+
+    select = document.createElement( 'select' );
+    select.id = "station";
+
+    index = 0;
+
+    for( i = 0; i < stations.length; i++ )
+    {
+        option = document.createElement( 'option' );
+        select.appendChild( option );
+        option.value = stations[i].id;
+        option.innerHTML = stations[i].name;
+
+        hash = window.location.hash;
+        if( hash != "" ) hash = hash.substr( 3 );
+        if( hash == stations[i].id )
+        {
+            index = i;
+        }
+    }
+
+    select.addEventListener( "change", selectStation );
+    titlebar.appendChild( select );
+
+    select.selectedIndex = index;
+
+    selectStation();
 }
 
 // Set up stats update callback

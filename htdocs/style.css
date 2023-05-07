@@ -105,5 +105,18 @@ body {
     display: block;
 }
 
+#station {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    text-align: center;
+    width: 100%;
+    outline: none;
+}
 
-
+#station option {
+    color: #000;
+}

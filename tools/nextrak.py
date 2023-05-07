@@ -257,6 +257,7 @@ class Selector:
             tracknum = int( tracknum )
             info['track'] = tracknum
         else:
+            tracknum = None
             info['track'] = None
 
         # Extract boolean flags
@@ -276,11 +277,9 @@ class Selector:
                  .setdefault( info['artist'], {} )
                  .setdefault( info['album'], [] ))
 
-        if len( index ) < tracknum:
+        if tracknum and len( index ) < tracknum:
             index.extend( (None,) * (tracknum - len( index )))
             index[tracknum - 1] = track
-
-
 
     def preSelect( self, state ):
         """Perform any needed functions before selecting a track.
@@ -418,7 +417,7 @@ class Selector:
         # Check if this is the start of a follow group
         index = state['trackindex'][info['artist']][info['album']]
         i = info['track']
-        if len( index ) > i and state['files'][index[i]]['follow']:
+        if i and len( index ) > i and state['files'][index[i]]['follow']:
             group = [track]
             while len( index ) > i and state['files'][index[i]]['follow']:
                 group.append( index[i] )

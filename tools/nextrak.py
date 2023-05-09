@@ -415,15 +415,19 @@ class Selector:
             queue.pop( 0 )
 
         # Check if this is the start of a follow group
-        index = state['trackindex'][info['artist']][info['album']]
-        i = info['track']
-        if i and len( index ) > i and state['files'][index[i]]['follow']:
-            group = [track]
-            while len( index ) > i and state['files'][index[i]]['follow']:
-                group.append( index[i] )
-                i += 1
+        try:
+            index = state['trackindex'][info['artist']][info['album']]
+            i = info['track']
+            if i and len( index ) > i and state['files'][index[i]]['follow']:
+                group = [track]
+                while len( index ) > i and state['files'][index[i]]['follow']:
+                    group.append( index[i] )
+                    i += 1
+                return group
+        except KeyError:
+            # If there's no track number, this will fail. Just ignore it.
+            pass
 
-            return group
 
 if __name__ == "__main__":
     main()

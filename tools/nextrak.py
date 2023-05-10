@@ -250,6 +250,11 @@ class Selector:
             else:
                 info[field] = None
 
+        if 'albumartist' in easy:
+            info['aartist'] = easy['albumartist'][0]
+        else:
+            info['aartist'] = info['artist']
+
         # Convert NN or NN/NN format into just a plain int
         if 'tracknumber' in easy:
             tracknum = easy['tracknumber'][0]
@@ -274,12 +279,12 @@ class Selector:
 
         # Create an index of tracks by album and track number
         index = (state.setdefault( 'trackindex', {} )
-                 .setdefault( info['artist'], {} )
+                 .setdefault( info['aartist'], {} )
                  .setdefault( info['album'], [] ))
 
         if tracknum and len( index ) < tracknum:
             index.extend( (None,) * (tracknum - len( index )))
-            index[tracknum - 1] = track
+        index[tracknum - 1] = track
 
     def preSelect( self, state ):
         """Perform any needed functions before selecting a track.
@@ -335,6 +340,9 @@ class Selector:
             album: Album track is from
             title: Name of the track
             track: Track number
+            aartist: Album Artist. Usually this is either the same as the
+              artist, or "Various Artists" in the case of compilation albums.
+              If not present in the ID3 tags, set to the same as `artist`.
             skip: Whether this track is marked to never be played (boolean)
             follow: Whether this tracks follows another one (boolean)
 
@@ -343,7 +351,9 @@ class Selector:
         The base selector also adds the following:
             trackindex: A dict of artists, each containing a dict of albums, each
                 containing an array of files on the album. This can be used to look
-                up a file by album and track number, as used by the follow code.
+                up a file by album and track number, as used by the follow
+                code. Note that this uses the Album Artist tag, to properly
+                track songs on compilation albums.
             lastplay: A dict storing the last time a file in a given subfolder was
                 played, in 'internal' time. These subfolders are the same
                 folders as populate the 'folders' field in a track's info.

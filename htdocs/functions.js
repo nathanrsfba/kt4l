@@ -131,7 +131,7 @@ function pause()
 	document.getElementById( "playinglabel" ).innerHTML = "";
 	document.getElementById( "artist" ).innerHTML = "";
 	document.getElementById( "title" ).innerHTML = "";
-	document.title = `[${SITE}]`;
+	document.title = SITE;
 	player.stop();
         document.getElementById( "playingbox" ).classList.remove( "visible" );
 	pushRecent( current );

@@ -275,7 +275,7 @@ if( stations.length > 1 )
         option.innerHTML = stations[i].name;
 
         hash = window.location.hash;
-        if( hash != "" ) hash = hash.substr( 3 );
+        if( hash != "" ) hash = hash.substr( 1 );
         if( hash == stations[i].id )
         {
             index = i;

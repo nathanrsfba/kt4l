@@ -7,17 +7,12 @@ const ICECASTURL = "/radio"; // Base Icecast URL
 var STREAMURL = `${ICECASTURL}/stream`;       // Stream URL
 var STATURL = `${ICECASTURL}/status-json.xsl` // Status URL
 
-var COOKIEEXP = 30; // Cookie shelf life in days
-
 // If you want the player to support multiple stations, add them here, and the
 // player titlebar will be converted to a dropdown that allows station selection.
 
 var stations = [
-    /*
     { id: "kt4l", name: "Radio KT4L", url: "/radio/stream", stats: "/radio/status-json.xsl" },
     { id: "deliria", name: "Deliria Radio", url: "/radio2/stream", stats: "/radio2/status-json.xsl" }
-    */
-
 ];
 
 var volume = 100; // Current volume, 0-100
@@ -94,15 +89,14 @@ document.addEventListener( "keypress", (e) => {
 }, false );
 
 // Change the volume by the given amount (signed)
-function changeVol( delta, updateCookie=true ) 
+function changeVol( delta ) 
 {
-    setVol( volume + delta, updateCookie );
+    setVol( volume + delta );
 }
 
 // Set the volume to the given value
-function setVol( newVal, updateCookie=true ) 
+function setVol( newVal ) 
 {
-    // console.log( `Volume set to ${newVal}` );
     volume = Math.floor( newVal );
     if( volume > 100 ) volume = 100;
     if( volume < 0 ) volume = 0;
@@ -117,8 +111,6 @@ function setVol( newVal, updateCookie=true )
     {
 	document.getElementById( "volume" ).value = newVal;
     }
-
-    if( updateCookie ) setCookie( "volume", `${volume}`, COOKIEEXP );
 }
 
 // Pause the audio
@@ -239,50 +231,12 @@ function initPlayer()
                 onPlay
             }
         );
-    changeVol( 0, false );
-}
-
-// Taken from https://www.w3schools.com/js/js_cookies.asp
-function getCookie( cname ) 
-{
-    let name = cname + "=";
-    let decodedCookie = decodeURIComponent( document.cookie );
-    let ca = decodedCookie.split( ';' );
-    for( let i = 0; i <ca.length; i++ ) 
-    {
-        let c = ca[i];
-        while( c.charAt( 0 ) == ' ' ) 
-        {
-            c = c.substring( 1 );
-        }
-        if( c.indexOf(name) == 0 )
-        {
-            return c.substring( name.length, c.length );
-        }
-    }
-    return "";
-}
-
-function setCookie( cname, cvalue, exdays ) 
-{
-      const d = new Date();
-      d.setTime( d.getTime() + (exdays*24*60*60*1000) );
-      let expires = d.toUTCString();
-      document.cookie = `${cname}=${cvalue};expires=${expires};SameSite=strict`;
+    changeVol( 0 );
 }
 
 initPlayer();
 
-volcookie = getCookie( "volume" );
-// console.log( `Volume cookie was ${volcookie}` );
-if( volcookie == "" )
-{
-    setVol( 100 );
-}
-else
-{
-    setVol( +volcookie )
-}
+setVol( 50 )
 
 // Bind media player keys to stream control
 if( "mediaSession" in navigator ) 
@@ -293,9 +247,11 @@ if( "mediaSession" in navigator )
 }
 
 // Bind volume slider
-var input = document.getElementById( "volume" );
-input.addEventListener("input", (event) => {
-    setVol( Number( event.target.value )) } );
+{
+    var input = document.getElementById( "volume" );
+    input.addEventListener("input", (event) => {
+        setVol( Number( event.target.value )) } );
+}
 
 // Set up stations list, if needed
 if( stations.length > 1 )

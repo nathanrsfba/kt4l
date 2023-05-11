@@ -163,7 +163,7 @@ def findKeywords( info, fields, words ):
         word = word.lower()
         found = False
         for key in fields:
-            if info[key].lower().find( word ) != -1: found = True
+            if (info[key] or '').lower().find( word ) != -1: found = True
         if not found: return False
     return True
 

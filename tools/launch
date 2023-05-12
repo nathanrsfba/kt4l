@@ -60,17 +60,22 @@ stop() {
 }
 
 status() {
+    response=2
     if checkicecast; then
         echo "Icecast running"
+        response=$(($response - 1))
     else
         echo "Icecst not running"
     fi
 
     if checkezstream; then
         echo "EZStream running"
+        response=$(($response - 1))
     else
         echo "EZStream not running"
     fi
+
+    return $response
 }
 
 checkicecast() {

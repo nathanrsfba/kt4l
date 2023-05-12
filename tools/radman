@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Time in seconds to poll for status
+TIMEOUT=10
+
 # Get base directory
 
 dir="`realpath "$0"`"
@@ -195,29 +198,40 @@ status() {
     return $response
 }
 
+# Generate the dialog menu options for the main menu
+mainmenuitems() {
+    running=$1
+
+    echo Queue; echo "Edit queue"
+
+    if [ $running = 0 ]; then
+        echo Restart; echo "Restart server"
+        echo Stop; echo "Stop server"
+    else
+        echo Start; echo "Start server"
+    fi
+
+    echo Update; echo "Update database"
+
+    if [ $running = 0 ]; then
+        echo Next; echo "Skip to next track"
+    fi
+}
+
 mainmenu() {
     while true; do
         status > "$TMP2"
         running=$?
 
-        starttag="Start"
-        startitem="Start server"
-
-        if [ $running = 0 ]; then
-            starttag="Restart"
-            startitem="Restart server"
-        fi
-
+        (
+        IFS=$'\n'
         dialog --cancel-label Exit \
             --title "$title" \
-            --timeout 10 \
+            --timeout $TIMEOUT \
             --menu "`cat "$TMP2"`"  0 0 5 \
-            Queue "Edit queue" \
-            $starttag "$startitem" \
-            Stop "Stop server" \
-            Update "Update database" \
-            Next "Skip to next track" \
+            `mainmenuitems $running` \
             2> "$TMP"
+        )
 
         case $? in
             0) ;;

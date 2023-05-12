@@ -212,9 +212,9 @@ mainmenu() {
             --title "$title" \
             --timeout 10 \
             --menu "`cat "$TMP2"`"  0 0 5 \
+            Queue "Edit queue" \
             $starttag "$startitem" \
             Stop "Stop server" \
-            Queue "Edit queue" \
             Update "Update database" \
             Next "Skip to next track" \
             2> "$TMP"

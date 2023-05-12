@@ -227,17 +227,38 @@ mainmenu() {
 
         case `cat "$TMP"` in
             Start) 
-                (set -m ; tools/launch) ;;
+                (set -m ; tools/launch | dialog --title "$title" \
+                    --programbox "Starting server..." 20 60)
+                ;;
             Restart)
-                (set -m ; tools/launch restart) ;;
-            Stop) tools/launch stop;;
+                (set -m ; tools/launch restart | dialog --title "$title" \
+                    --programbox "Restarting server..." 20 60)
+                ;;
+            Stop) tools/launch stop | dialog --title "$title" \
+                    --programbox "Stopping server..." 20 60
+                ;;
             Queue) addedit ;;
+            Update) update ;;
             Next) tools/reject ;;
         esac
 
 
 
     done
+
+}
+
+# Update the library
+update() {
+    {
+        if [ -x tools/linksdirs ]; then
+            echo "Scanning for new additions..."
+            tools/linkdirs 2>&1
+        fi
+        echo "Updating database..."
+        tools/nextrak -u 2>&1
+    } | dialog --title "$title" \
+        --programbox "Updating library..." 20 60
 
 }
 

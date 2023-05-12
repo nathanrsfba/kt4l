@@ -1,0 +1,256 @@
+#!/bin/bash
+
+# Get base directory
+
+dir="`realpath "$0"`"
+dir="`dirname "$dir"`"
+dir="`dirname "$dir"`"
+
+cd "$dir"
+title="Radio Manager: $dir"
+
+TMP="`mktemp`"
+TMP2="`mktemp`"
+
+# Print each of argument $2-, each preceeded by $1, all separated by newlines
+optarg() {
+    opt=$1
+    shift
+    for arg in "$@"; do
+        echo "$opt"
+        echo "$arg"
+    done
+}
+
+echoq() {
+    for arg in "$@"; do
+        echo -n "$arg|"
+    done
+    echo
+}
+
+# Show dialog to add file to queue
+addfile() {
+    # Field width
+    FW=40
+    # Input width
+    IW=80
+    # Field horizontal position
+    FX=15
+
+    keywords=''
+    title=''
+    artist=''
+    album=''
+    exclude=''
+    out=''
+
+    local msg
+    local out
+    msg="Add to queue:"
+    out="$msg"
+    while true; do
+        dialog \
+            --title "$title" \
+            --form "$out" 0 0 5 \
+            Keywords 1 1 "$keywords" 1 $FX $FW $IW \
+            Title 2 1 "$title" 2 $FX $FW $IW \
+            Artist 3 1 "$artist" 3 $FX $FW $IW \
+            Album 4 1 "$album" 4 $FX $FW $IW \
+            Exclude 5 1 "$exclude" 5 $FX $FW $IW \
+            2>"$TMP"
+
+        if [ $? != 0 ]; then
+            return 1
+        fi
+
+        { 
+            read keywords 
+            read title 
+            read artist 
+            read album 
+            read exclude
+        } < "$TMP"
+
+        tools/queue $keywords `optarg -A $artist` `optarg -T $title` \
+            `optarg -L $album` `optarg -X $exclude` > "$TMP2"
+        if [ $? = 0 ]; then
+            return 0
+        fi
+
+        out="`head -5 "$TMP2";echo;echo "$msg"`"
+    done
+
+}
+
+# Massage queue output into menu options
+queuemenu() {
+    while read track; do
+        num=${track%%: *}
+        title=${track#*: }
+        echo $num
+        if [ "$1" != "" ]; then
+            echo -n "$*"
+        fi
+        echo $title
+    done
+}
+
+editqueue() {
+    local msg
+    local out
+    msg="Edit Queue:"
+    out="$msg"
+    while true; do
+        tools/queue > "$TMP"
+        (
+        IFS=$'\n' 
+        dialog \
+            --title "$title" \
+            --default-item Add \
+            --cancel-label Back \
+            --menu "Edit queue:" 20 70 12 \
+            `queuemenu < "$TMP"` \
+            Add "Add track to queue" \
+            2> "$TMP2"
+        )
+        if [ $? != 0 ]; then
+            cat "$TMP2"
+            return 1
+        fi
+
+        result=`cat "$TMP2"`
+        case $result in
+            [0-9]*)
+                edittrack $result 2> "$TMP2"
+                if [ $? != 0 ]; then
+                    dialog --msgbox "`cat "$TMP2"`" 10 70
+                fi
+                ;;
+            Add)
+                addfile
+                ;;
+        esac
+    done
+
+
+
+}
+
+edittrack() {
+    track=$1
+    (
+    IFS=$'\n' 
+    dialog \
+        --title "$title" \
+        --menu "Edit entry:" 20 70 12 \
+        `queuemenu "Move before: " < "$TMP"` \
+        End "Move to end" \
+        Remove "Remove track from queue" 2> "$TMP2"
+    ) || return 1
+
+    result=`cat "$TMP2"`
+
+    case $result in
+        [0-9]*)
+            tools/queue -m $result $track 1>&2 || return 1
+            ;;
+        End)
+            tools/queue -m 0 $track 1>&2 || return 1
+            ;;
+        Remove)
+            tools/queue -r $track 1>&2 || return 1
+            ;;
+    esac
+
+}
+
+# Edit the queue, or show the add screen if empty
+addedit() {
+    tools/queue > "$TMP"
+    if [ -s "$TMP" ]; then
+        editqueue
+    else
+        addfile && editqueue
+    fi
+}
+
+# Get server stats
+status() {
+    response=0
+    tools/launch status > "$TMP"
+    if [ $? != 0 ]; then
+        cat "$TMP"
+        response=1
+    else
+       echo "Currently playing:"
+       tools/getmeta 
+
+       tools/queue > "$TMP"
+       if [ -s "$TMP" ]; then
+           echo "Up next:"
+           head -3 "$TMP"
+       fi
+    fi
+    return $response
+}
+
+mainmenu() {
+    while true; do
+        status > "$TMP2"
+        running=$?
+
+        starttag="Start"
+        startitem="Start server"
+
+        if [ $running = 0 ]; then
+            starttag="Restart"
+            startitem="Restart server"
+        fi
+
+        dialog --cancel-label Exit \
+            --title "$title" \
+            --timeout 10 \
+            --menu "`cat "$TMP2"`"  0 0 5 \
+            $starttag "$startitem" \
+            Stop "Stop server" \
+            Queue "Edit queue" \
+            Update "Update database" \
+            Next "Skip to next track" \
+            2> "$TMP"
+
+        case $? in
+            0) ;;
+            1) return ;;
+            *) continue ;;
+        esac
+
+        case `cat "$TMP"` in
+            Start) 
+                (set -m ; tools/launch) ;;
+            Restart)
+                (set -m ; tools/launch restart) ;;
+            Stop) tools/launch stop;;
+            Queue) addedit ;;
+            Next) tools/reject ;;
+        esac
+
+
+
+    done
+
+}
+
+mainmenu # status # addedit
+
+rm -f "$TMP" "$TMP2"
+
+# Status
+# playing
+# up next
+#
+# start/stop
+# restart
+# queue
+# update
+# skip

@@ -2,12 +2,19 @@
 
 my %vars;
 
+foreach my $key (keys %ENV)
+{
+    $vars{$key} = $ENV{$key};
+}
+
 while( <> )
 {
     next if( /^\#/ || /^\s*$/ || ! /\=/ );
     /([^=]+)=(.*)/;
     $vars{$1} = $2;
 }
+
+$vars{''} = "%";
 
 while( <STDIN> )
 {

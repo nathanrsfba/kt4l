@@ -8,6 +8,8 @@ dir="`dirname "$dir"`"
 
 cd "$dir"
 
+export BASEDIR="$dir"
+
 # Fix this if it isn't already :P
 chmod o-rw configs/passwd*
 

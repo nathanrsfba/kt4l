@@ -203,7 +203,16 @@ mainmenuitems() {
     running=$1
 
     echo Queue; echo "Edit queue"
+    echo Update; echo "Update database"
 
+    if [ $running = 0 ]; then
+        echo Next; echo "Skip to next track"
+    fi
+
+    if [ `siblings | wc -l` != 0 ]; then
+        echo Switch; echo "Switch to a sister station"
+    fi
+     
     if [ $running = 0 ]; then
         echo Restart; echo "Restart server"
         echo Stop; echo "Stop server"
@@ -211,11 +220,33 @@ mainmenuitems() {
         echo Start; echo "Start server"
     fi
 
-    echo Update; echo "Update database"
+}
 
-    if [ $running = 0 ]; then
-        echo Next; echo "Skip to next track"
-    fi
+switchitems() {
+    (
+    IFS=$'\n'
+    for stat in `siblings`; do
+        echo "$stat"
+        echo "Switch to $stat"
+    done
+    )
+}
+
+
+switchmenu() {
+    (
+    IFS=$'\n'
+    dialog \
+        --title "$title" \
+        --menu "Switch to:" 0 0 5 \
+        `switchitems` \
+        2> "$TMP"
+    ) || return
+
+    sel="`cat "$TMP"`"
+    cleanup
+    exec ../"$sel"/tools/radman
+    exit 1
 }
 
 mainmenu() {
@@ -228,7 +259,7 @@ mainmenu() {
         dialog --cancel-label Exit \
             --title "$title" \
             --timeout $TIMEOUT \
-            --menu "`cat "$TMP2"`"  0 0 5 \
+            --menu "`cat "$TMP2"`"  0 0 6 \
             `mainmenuitems $running` \
             2> "$TMP"
         )
@@ -254,6 +285,7 @@ mainmenu() {
             Queue) addedit ;;
             Update) update ;;
             Next) tools/reject ;;
+            Switch) switchmenu ;;
         esac
 
 
@@ -276,16 +308,27 @@ update() {
 
 }
 
+# Get a list of sibling stations
+siblings() {
+    dir="`pwd`"
+    dir="`basename "$dir"`"
+    this="$dir"
+
+    for mgr in ../*/tools/radman; do
+        if [ -x "$mgr" ]; then
+            dir="`dirname "$mgr"`"
+            dir="`dirname "$dir"`"
+            dir="`basename "$dir"`"
+            if [ "$dir" != "$this" ]; then
+                echo "$dir"
+            fi
+        fi
+    done
+}
+
+cleanup() {
+    rm -f "$TMP" "$TMP2"
+}
+
 mainmenu # status # addedit
-
-rm -f "$TMP" "$TMP2"
-
-# Status
-# playing
-# up next
-#
-# start/stop
-# restart
-# queue
-# update
-# skip
+cleanup

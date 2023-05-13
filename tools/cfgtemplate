@@ -2,11 +2,6 @@
 
 my %vars;
 
-foreach my $key (keys %ENV)
-{
-    $vars{$key} = $ENV{$key};
-}
-
 while( <> )
 {
     next if( /^\#/ || /^\s*$/ || ! /\=/ );
@@ -18,6 +13,20 @@ $vars{''} = "%";
 
 while( <STDIN> )
 {
-    s/%(\w+)%/$vars{$1}/g;
+    s/%(\w+)%/${\(getvar( $1 ))}/g;
     print;
+}
+
+sub getvar()
+{
+    my( $key ) = @_;
+    if( exists( $vars{$key} ))
+    {
+        return $vars{$key}
+    }
+    if( exists( $ENV{$key} ))
+    {
+        return $ENV{$key}
+    }
+    die "Unknown configuration variable: $key\n";
 }

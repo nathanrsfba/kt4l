@@ -1,10 +1,10 @@
 # KT4L #
 
-A horribly overengineered, homegrown music broadcasting system, grown out of
-the Deliria project
+A horribly overcomplicated, overengineered, homegrown music broadcasting
+system, grown out of the Deliria project
 
 # Structure #
-#
+
 The following folders will be found here:
 
 * htdocs: Contains the web content that appears in the root of the web site.

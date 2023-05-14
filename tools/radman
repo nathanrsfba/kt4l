@@ -331,5 +331,11 @@ cleanup() {
     rm -f "$TMP" "$TMP2"
 }
 
+die() {
+    exit
+}
+
+trap cleanup EXIT
+trap die INT
+
 mainmenu # status # addedit
-cleanup

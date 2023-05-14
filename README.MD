@@ -53,11 +53,23 @@ Also included is Icecast Metadata Player v1.14.3, used for the web plaer.
 3. Set some passwords in configs/passwd.cfg.new, set it to **not
    world-readable**, and rename it to passwd.cfg
 4. Edit settings.cfg, ezstream.xml, and icecast.xml and set the settings
-   appropriate to your setup
+   appropriate to your setup. The most common options are in settings.cfg, but
+   you may want to consult the two .xml files for more advanced options.
+
+   If you have multiple stations sharing configuration settings, you can
+   symlink settings.cfg to a common configuration file, then add a 'local'
+   configuration file to override it. The launch script will read anything with
+   a .cfg extension, in asciibetical order, so name them accordingly.  
 5. Make (or symlink) a directory called 'library' that has music in it
 6. Run `tools/nextrak -u` to set up the database
 7. To enable the web player, place the contents of htdocs into a folder on your
    web server, and edit functions.js to point to the Icecast server.
+
+   If you have multiple stations running, you can configure the web player on a
+   single instance to select between them. Just add the appropriate values to
+   the (commented out by default) array at the top of functions.js. If more
+   than one is running on the same server (meaning the status URLs for them
+   will point to the same place) the web player will figure out what to do.
 
    Included in configs is an httpd.conf that sets up /srv/kt4l/htdocs as the
    web root, and reverse-proxies /radio to the localhost on port 7777 (the

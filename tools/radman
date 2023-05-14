@@ -209,7 +209,7 @@ mainmenuitems() {
         echo Next; echo "Skip to next track"
     fi
 
-    if [ `siblings | wc -l` != 0 ]; then
+    if [ `siblings | wc -l` -gt 1 ]; then
         echo Switch; echo "Switch to a sister station"
     fi
      
@@ -234,10 +234,13 @@ switchitems() {
 
 
 switchmenu() {
+    this="`pwd`"
+    this="`basename "$this"`"
     (
     IFS=$'\n'
     dialog \
         --title "$title" \
+        --default-item "$this" \
         --menu "Switch to:" 0 0 5 \
         `switchitems` \
         2> "$TMP"
@@ -319,9 +322,7 @@ siblings() {
             dir="`dirname "$mgr"`"
             dir="`dirname "$dir"`"
             dir="`basename "$dir"`"
-            if [ "$dir" != "$this" ]; then
-                echo "$dir"
-            fi
+            echo "$dir"
         fi
     done
 }

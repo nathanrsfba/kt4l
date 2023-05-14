@@ -297,7 +297,7 @@ mainmenu() {
 # Update the library
 update() {
     {
-        if [ -x tools/linksdirs ]; then
+        if [ -x tools/linkdirs ]; then
             echo "Scanning for new additions..."
             tools/linkdirs 2>&1
         fi

@@ -17,7 +17,10 @@ chmod o-rw configs/passwd*
 mkdir -p log
 
 start() {
-    if checkicecast; then
+    if [ ! -e configs/icecast.xml ]; then
+        # Not providing our own icecast server
+        true
+    elif checkicecast; then
         echo "Icecast already running"
     else
         echo "Starting Icecast..."
@@ -51,7 +54,10 @@ stop() {
         echo "EZStream not running"
     fi
 
-    if checkicecast; then
+    if [ ! -e configs/icecast.xml ]; then
+        # Not providing our own icecast server
+        true
+    elif checkicecast; then
         echo "Stopping Icecast..."
         /bin/kill --timeout 5000 KILL `cat configs/icecast.pid`
     else
@@ -63,7 +69,9 @@ stop() {
 
 status() {
     response=2
-    if checkicecast; then
+    if [ ! -e configs/icecast.xml ]; then
+        response=$(($response - 1))
+    elif checkicecast; then
         echo "Icecast running"
         response=$(($response - 1))
     else

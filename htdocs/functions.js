@@ -12,13 +12,13 @@ var COOKIEEXP = 30; // Cookie shelf life in days
 // If you want the player to support multiple stations, add them here, and the
 // player titlebar will be converted to a dropdown that allows station selection.
 
+/*
 var stations = [
-    /*
     { id: "kt4l", name: "Radio KT4L", url: "/radio/stream", stats: "/radio/status-json.xsl" },
+    { id: "kt4lclassic", name: "KT4L Classic", url: "/radio3/stream", stats: "/radio3/status-json.xsl" },
     { id: "deliria", name: "Deliria Radio", url: "/radio2/stream", stats: "/radio2/status-json.xsl" }
-    */
-
 ];
+*/
 
 var volume = 100; // Current volume, 0-100
 var current = ''  // Current track
@@ -102,13 +102,11 @@ function changeVol( delta, updateCookie=true )
 // Set the volume to the given value
 function setVol( newVal, updateCookie=true ) 
 {
-    // console.log( `Volume set to ${newVal}` );
     volume = Math.floor( newVal );
     if( volume > 100 ) volume = 100;
     if( volume < 0 ) volume = 0;
     player.audioElement.volume = (volume / 100) ** 2;
 
-    // console.log(volume)
     if( volume == 0 )
     {
 	// document.getElementById( "volslid" ).innerHTML = " AUDIO MUTED".padEnd( vwidth );
@@ -124,7 +122,6 @@ function setVol( newVal, updateCookie=true )
 // Pause the audio
 function pause()
 {
-    // console.log( "We're in PlayPause" );
     if( player.state != "stopped" )
     {
 	document.getElementById( "playicon" ).src = "play.svg";
@@ -154,7 +151,6 @@ function play()
 		album: SITE
 	    });
 	}
-        // console.log( "Starting player..." );
 	player.play();
         document.getElementById( "playingbox" ).classList.add( "visible" );
 	clearRecent();
@@ -164,7 +160,6 @@ function play()
 // Play or Pause the audio
 function playPause()
 {
-    // console.log( "We're in PlayPause" );
     if( player.state == "stopped" )
     {
         play();
@@ -185,10 +180,35 @@ function updateStats() {
 	if( xhr.readyState == 4 && xhr.status == 200 ) 
 	{
 	    var stats = xhr.response;
-	    var listeners = stats.icestats.source.listeners;
-	    document.getElementById( "listeners" ).innerHTML = 
-		` Current Listeners: ${String( listeners )}`;
-	    // console.log( stats );
+	    var source = stats.icestats.source;
+            /* If the server has more than one source, attempt to find the relevant
+             * one by examining mount point */
+            if( Array.isArray( source ))
+            {
+                var sources = source;
+                source = null;
+                thismount = STREAMURL.split( "/" ).slice( -1 )[0];
+
+                for( i = 0; i < sources.length; i++ )
+                {
+                    mount = sources[i].listenurl.split( "/" ).slice( -1 )[0];
+                    if( mount == thismount )
+                    {
+                        source = sources[i];
+                        break;
+                    }
+                }
+            }
+            if( source )
+            {
+                var listeners = source.listeners;
+                document.getElementById( "listeners" ).innerHTML = 
+                    `Current Listeners: ${String( listeners )}`;
+            }
+            else
+            {
+                document.getElementById( "listeners" ).innerHTML = "";
+            }
 	} 
 	else 
 	{
@@ -274,7 +294,6 @@ function setCookie( cname, cvalue, exdays )
 initPlayer();
 
 volcookie = getCookie( "volume" );
-// console.log( `Volume cookie was ${volcookie}` );
 if( volcookie == "" )
 {
     setVol( 100 );
@@ -298,7 +317,7 @@ input.addEventListener("input", (event) => {
     setVol( Number( event.target.value )) } );
 
 // Set up stations list, if needed
-if( stations.length > 1 )
+if( typeof stations !== 'undefined' && stations.length > 1 )
 {
     titlebar = document.getElementById( "stationtitle" );
     titlebar.innerHTML = "";

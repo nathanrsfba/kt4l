@@ -60,6 +60,13 @@ Also included is Icecast Metadata Player v1.14.3, used for the web plaer.
    symlink settings.cfg to a common configuration file, then add a 'local'
    configuration file to override it. The launch script will read anything with
    a .cfg extension, in asciibetical order, so name them accordingly.  
+
+   If you're streaming to an existing server, point settings.cfg at your
+   server, then delete the configs/icecast.xml file. This will signal to the
+   scripts not to try to run a new icecast instance when starting the stream.
+   You can also stream multiple stations to the same icecast server; just set
+   the 'MOUNT' option in settings.cfg to a unique value for each station, and
+   point any clients to the appropriate URL.
 5. Make (or symlink) a directory called 'library' that has music in it
 6. Run `tools/nextrak -u` to set up the database
 7. To enable the web player, place the contents of htdocs into a folder on your

@@ -26,9 +26,15 @@ without having to exit and restart radman.
 This will launch the radio server, performing a few tasks beforehand to set
 everything up. This includes generating the actual configuration files in /tmp
 from the templates in config/, making sure the log directory exists, and making
-sure the password file is not world readable. It takes rc-style 'start',
-'stop', and 'restart' options (as well as 'status'), so it can be linked into
-rc-style init directories.
+sure the password file is not world readable. It will then launch icecast, and
+then ezstream.
+
+If the icecast.xml file has been removed, it will only start ezstream, and not
+icecast. Naturally the station should be configured to stream to an icecast
+server that is running elsewhere.
+
+It takes rc-style 'start', 'stop', and 'restart' options (as well as 'status'),
+so it can be linked into rc-style init directories.
 
 ## cfgtemplate ##
 

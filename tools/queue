@@ -43,8 +43,6 @@ def main():
                         nargs='*',
                         help="Keywords of track to queue")
     args = parser.parse_args()
-    print( args )
-    exit()
 
     statepath = Path( args.state )
     lockpath = statepath.with_name( statepath.name + ".lock" )

@@ -28,23 +28,23 @@ def main():
     parser.add_argument( '-m', '--move',
                         help="Move track to position")
     parser.add_argument( '-A', '--artist',
-                        action='append', default=[],
+                        nargs='*', action='extend', default=[],
                         help='Search artist field for keyword')
     parser.add_argument( '-T', '--title',
-                        action='append', default=[],
+                        nargs='*', action='extend', default=[],
                         help='Search title field for keyword')
     parser.add_argument( '-L', '--album',
-                        action='append', default=[],
+                        nargs='*', action='extend', default=[],
                         help='Search album field for keyword')
     parser.add_argument( '-X', '--exclude',
-                        action='append', default=[],
+                        nargs='*', action='extend', default=[],
                         help='Exclude tracks containing keyword')
     parser.add_argument( 'keywords',
                         nargs='*',
                         help="Keywords of track to queue")
     args = parser.parse_args()
-    # print( args )
-    # exit()
+    print( args )
+    exit()
 
     statepath = Path( args.state )
     lockpath = statepath.with_name( statepath.name + ".lock" )

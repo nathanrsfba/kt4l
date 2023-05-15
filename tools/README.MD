@@ -122,9 +122,9 @@ default checks artist, title and album for the words. So searching 'pink floyd
 money' will probably do what you expect.
 
 Command line arguments can search specifically for artist (-A), title (-T) or
-album (-L) alone. In unix style, these switches all take a paremeter, and can
-be specified more than once to search for more than one word in the given
-field.
+album (-L) alone. Any keywords appearing after these switches will only be
+searched against the specified field. More than one of these options can be
+specified at once, so you can, for example: `queue -A pink floyd -T money`.
 
 Keywords can be excluded using the -X argument. If any argument to -X is found,
 a track will be rejected as a potential match.

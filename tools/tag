@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-from mutagen.id3 import ID3, TXXX
+from mutagen.id3 import ID3, TXXX, TPE1, TIT2
+from mutagen.easyid3 import EasyID3
 import argparse
 
 parser=argparse.ArgumentParser(
@@ -26,6 +27,16 @@ parser.add_argument( '-o', '--fade-out',
                     help='Number of seconds to fade out at end' )
 parser.add_argument( '-S', '--skip', action='store_true',
                     help='Never play this track' )
+parser.add_argument( '-d', '--display', action='store_true',
+                    help='Display the display artist and title' )
+parser.add_argument( '-a', '--artist',
+                    help='Set display artist' )
+parser.add_argument( '-A', '--append-artist',
+                    help='Append to display artist' )
+parser.add_argument( '-t', '--title',
+                    help='Set display title' )
+parser.add_argument( '-T', '--append-title',
+                    help='Append to display title' )
 parser.add_argument( '--no-skip', action='store_true', 
                     help='Turn off skip' )
 parser.add_argument( '-F', '--follow', action='store_true',
@@ -33,14 +44,22 @@ parser.add_argument( '-F', '--follow', action='store_true',
 parser.add_argument( '--no-follow', action='store_true', 
                     help='Turn off follow' )
 
-
 opts = parser.parse_args()
 
-fields = ('Start', 'End', 'FadeIn', 'FadeOut', 'Skip', 'Follow')
-print( "%5s %5s %6s %7s %4s %6s File" % fields )
+if( opts.artist != '' or opts.title != '' or
+   opts.append_artist or opts.append_title ):
+    opts.display = True
+
+if not opts.display:
+    fields = ('Start', 'End', 'FadeIn', 'FadeOut', 'Skip', 'Follow')
+    print( "%5s %5s %6s %7s %4s %6s File" % fields )
+else:
+    dfields = ('Disp. Artist', 'Disp. Title')
+    print( "%-25s %-25s File" % dfields )
 
 for file in opts.files:
     data = ID3( file )
+    easy = EasyID3( file )
 
     changed = False
     def setTag( tag, opt ):
@@ -66,18 +85,40 @@ for file in opts.files:
             data.add( TXXX( desc=tag, text=['0'] ))
             changed = True
 
+    if opts.artist != None:
+        setTag( 'Display Artist', opts.artist )
+    if opts.append_artist:
+        setTag( 'Display Artist', f"{easy['artist'][0]} {opts.append_artist}" )
+    if opts.title != None:
+        setTag( 'Display Title', opts.title )
+    if opts.append_title:
+        setTag( 'Display Title', f"{easy['title'][0]} {opts.append_title}" )
+
     setBoolean( 'Skip', opts.skip, opts.no_skip )
     setBoolean( 'Follow', opts.follow, opts.no_follow )
 
     if changed: data.save()
-    info = []
-    for tag in fields:
-        if f'TXXX:{tag}' in data:
-            info.append( data[f"TXXX:{tag}"].text[0] )
-        else:
-            info.append( '-' )
-    info.append( file )
-    print( "%5s %5s %6s %7s %4s %6s %s" % tuple( info ))
+
+    if not opts.display:
+        info = []
+        for tag in fields:
+            if f'TXXX:{tag}' in data:
+                info.append( data[f"TXXX:{tag}"].text[0] )
+            else:
+                info.append( '-' )
+        info.append( file )
+        print( "%5s %5s %6s %7s %4s %6s %s" % tuple( info ))
+    else:
+        definfo = [easy['artist'][0], easy['title'][0]]
+        info = []
+        for tag in ('Display Artist', 'Display Title'):
+            if f'TXXX:{tag}' in data:
+                info.append( data[f"TXXX:{tag}"].text[0] )
+            else:
+                info.append( f"*{definfo[0]}" )
+            definfo.pop( 0 )
+        info.append( file )
+        print( "%-25s %-25s %s" % tuple( info ))
     # print( f'{file}: {info}' )
 
 

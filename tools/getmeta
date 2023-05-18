@@ -76,6 +76,11 @@ def makeMetadata( metapath, playlist ):
             easy = EasyID3( file )
             artist = easy['artist'][0]
             title = easy['title'][0]
+            if 'TXXX:Display Artist' in id3:
+                artist = id3['TXXX:Display Artist'][0]
+            if 'TXXX:Display Title' in id3:
+                title = id3['TXXX:Display Title'][0]
+
             files.append( (float( id3.info.length ), artist, title) )
 
     with open( metapath, 'w' ) as fp:

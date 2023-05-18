@@ -203,5 +203,11 @@ it how to process the files in the library. These all take the form of TXXX
   it should always play. Note that the preceeding track is determined using
   artist, album, and track number tags in the ID3 data. This is a boolean
   value, similar to the above.
+* Display Artist: This is the name of the artist as it should be displayed to
+  listeners, if different from the main artist tag. Use cases include adding a
+  'featuring' artist, without having to change the main artist.
+* Display Title: As above, except for the song title. Use cases include adding
+  'Live' to the tracks on a live album, in which case changing the actual
+  titles doesn't make sense.
 
 Note that the descriptions of these tags are all case-sensitive.

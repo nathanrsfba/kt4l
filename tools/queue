@@ -73,6 +73,8 @@ def main():
             sel = state['queue'][-index]
         else:
             sel = []
+            titles = {}
+
             for file in state['files']:
                 info = state['files'][file]
 
@@ -88,6 +90,9 @@ def main():
                 if not state['files'][file]['skip']:
                     if not args.remove and not args.move:
                         sel.append( file )
+                        title = f"{state['files'][file]['artist']}:{state['files'][file]['title']}"
+                        titles.setdefault( title, 0 )
+                        titles[title] += 1
                     else:
                         if file in queue:
                             sel.append( file )
@@ -97,7 +102,10 @@ def main():
                     print( "Multiple matching items:" )
                 for item in sel:
                     info = state['files'][item]
-                    print( f"{info['artist']}: {info['title']}" )
+                    if titles[f"{info['artist']}:{info['title']}"] > 1:
+                        print( f"{info['artist']}: {info['title']} ({info['album']})" )
+                    else:
+                        print( f"{info['artist']}: {info['title']}" )
                 if args.list: return 0
                 return 1
             if len( sel ) == 0:

@@ -46,7 +46,7 @@ parser.add_argument( '--no-follow', action='store_true',
 
 opts = parser.parse_args()
 
-if( opts.artist != '' or opts.title != '' or
+if( opts.artist != None or opts.title != None or
    opts.append_artist or opts.append_title ):
     opts.display = True
 

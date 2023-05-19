@@ -230,11 +230,23 @@ before it's been configured.
 ## tag ##
 
 This is a tool to set the various custom ID3 tags used by this project from the
-command line.
+command line. See the main readme for information about these tags.
 
-Run it with the -h option to see what options it can set, and also see the
-"Radio Management Tags" section in the main README. If no options are given, it
-will display the relevant tags for the files given.
+It has the options -s, -e, -i, and -o to set the 'trim' tags: start, end, fade
+in and out, and -S and -F to set the skip and follow tags. (It also has
+--no-skip and --no-follow to unset them.)
+
+It also has options to set the display artist and title tags: -a and -t to set
+them, and -A and -T to generate them by appending the supplied text to the
+standard artist/title tags.
+
+The tags for the given files will be displayed after being set. By default this
+shows the 'trim' tags, unless the 'display' tags are set in which case it will
+display them instead. Both sets can be set in the same invocation, but only the
+latter will be displayed in this instance.
+
+If no options are given, the trim tags for the supplied files will be
+displayed. If the '-d' flag is given, the display tags will be shown instead.
 
 Note that it does not deal with general ID3 tags like artist or title, as there
 are other command line tools for this function.
@@ -316,4 +328,3 @@ from the library directory, and the directory should just be '.'.
 ## reindex ##
 
 A short shell script that runs mp3index to regen the library index
-

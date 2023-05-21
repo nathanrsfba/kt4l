@@ -284,7 +284,8 @@ class Selector:
 
         if tracknum and len( index ) < tracknum:
             index.extend( (None,) * (tracknum - len( index )))
-        index[tracknum - 1] = track
+        if tracknum:
+            index[tracknum - 1] = track
 
     def preSelect( self, state ):
         """Perform any needed functions before selecting a track.

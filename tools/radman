@@ -217,7 +217,7 @@ mainmenuitems() {
         echo Restart; echo "Restart server"
         echo Stop; echo "Stop server"
     else
-        echo Start; echo "Start server"
+        echo Launch; echo "Start server"
     fi
 
 }
@@ -274,7 +274,7 @@ mainmenu() {
         esac
 
         case `cat "$TMP"` in
-            Start) 
+            Launch) 
                 (set -m ; tools/launch | dialog --title "$title" \
                     --programbox "Starting server..." 20 60)
                 ;;

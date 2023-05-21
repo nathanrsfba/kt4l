@@ -58,6 +58,7 @@ body {
     color: #fff;
     border-radius: 1ex 1ex 0 0;
     border-top: 1px solid black;
+    border-bottom: 1px solid black;
 }
 #player .controls {
     color: #fff;
@@ -73,6 +74,8 @@ body {
 #player .recents #recentlabel {
     background: #800;
     color: #fff;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
 }
 
 #player #listeners {
@@ -81,6 +84,7 @@ body {
     border-radius: 0 0 1ex 1ex;
     padding: .1ex .5em;
     border-bottom: 1px solid black;
+    border-top: 1px solid black;
 }
 
 #player .playing div,

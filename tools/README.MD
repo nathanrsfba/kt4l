@@ -230,7 +230,9 @@ link in folders arranged in artist/album hierarchy, but also takes into account
 the possibility of the same album name from different artists.
 
 The source and target directories, as well as the the indicator file, may be
-configured by changing the variables at the top of the script.
+configured by changing the variables at the top of the script. Alternately, the
+settings may be saved to configs/settings.sh, to make it easier to update the
+script when it changes
 
 This script is non-executable by default, so radman doesn't try to call it
 before it's been configured.

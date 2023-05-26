@@ -34,3 +34,6 @@ metadata.json
 
 # Testing directories
 new
+
+# Local shell script settings
+settings.sh

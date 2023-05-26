@@ -1,8 +1,20 @@
 #!/bin/sh
 
-TAG=radiouse.chill
+# These settings can also be placed in configs/settings.sh
+
+TAG=radiouse
 BASE=/media/sf_nathanr/Music
 TARGET=/srv/chill/library/music
+
+# Get base directory
+
+dir="`realpath "$0"`"
+dir="`dirname "$dir"`"
+dir="`dirname "$dir"`"
+
+if [ -e "$dir/configs/settings.sh" ]; then
+    . settings.sh
+fi
 
 find "$BASE" -iname "$TAG" | while read file; do
     tag="$file"

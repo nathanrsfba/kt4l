@@ -1,32 +1,57 @@
 #!/bin/sh
 
-TAG=radiouse
-BASE=/media/sf_nathanr/Music/Album
-TARGET=/srv/kt4l/library/music
+TAG=radiouse.chill
+BASE=/media/sf_nathanr/Music
+TARGET=/srv/chill/library/music
 
 find "$BASE" -iname "$TAG" | while read file; do
+    tag="$file"
     file="`dirname "$file"`"
     dir="`dirname "$file"`"
     name="`basename "$file"`"
-    if [ -e "$TARGET/$name" ]; then
-        tpath="`realpath "$TARGET/$name"`"
-        bpath="`realpath "$file"`"
-        if [ "$tpath" = "$bpath" ]; then
-            # Already exists, do nothing
-            # echo "+ $file"
-            true
-        else
-            # Already exists, but is something else
-            alt="`dirname "$file"`"
-            alt="`basename "$alt"` - $name"
-            if [ ! -e "$TARGET/$alt" ]; then
-                echo "$alt"
-                ln -s "`realpath "$file"`" "$TARGET/$alt"
+    if [ -s "$tag" ]; then
+        # Tag is a list of files
+        if [ -d "$TARGET/$name" ]; then
+            # Check if the source and target directores are the same
+            # by checking one of the files
+            f1="`ls "$TARGET/$name/"*.mp3 | head -1 `"
+            f1n="`basename "$f1"`"
+            if [ "$f1" -ef "$file/$f1n" ]; then
+                # Exists and is the same
+                continue
             fi
         fi
-    else
-        # Doesn't exist, link it
+
+        if [ -e "$TARGET/$name" ]; then
+            # Exists and is something else
+            alt="`dirname "$file"`"
+            alt="`basename "$alt"` - $name"
+            name="$alt"
+        fi
+
         echo "$name"
-        ln -s "`realpath "$file"`" "$TARGET/$name"
+        mkdir "$TARGET/$name"
+
+        while read mp3; do
+            ln -s "$file/$mp3" "$TARGET/$name/$mp3"
+        done < "$tag"
+    else
+        # Tag is a zero-byte marker; link whole directory
+        if [ -h "$TARGET/$name" ]; then
+            # Check if the source and target directores are the same
+            if [ "$TARGET/$name" -ef "$file" ]; then
+                # Exists and is the same
+                continue
+            fi
+        fi
+        if [ -e "$TARGET/$name" ]; then
+            # Exists and is something else
+            alt="`dirname "$file"`"
+            alt="`basename "$alt"` - $name"
+            name="$alt"
+        fi
+
+        echo "$name"
+        ln -s "$file" "$TARGET/$name"
     fi
 done

@@ -208,15 +208,23 @@ supplied PID file is stale or deleted.
 
 ## linkdirs ##
 
-This is a quick and dirty shell script that scans a folder of music, figures
-out what subfolders need to be added to the library, and symlinks them as
-appropriate.
+This is a quick and dirty shell script that scans a folder of music (the source
+library), figures out what subfolders need to be added to the radio library
+(the target library), and symlinks them as appropriate.
 
-It searches the music folder for any subfolder which has a file called
+It searches the source library for any subfolder which has a file called
 'radiouse' in it, and uses the presence of this file to determine what folders
-should be linked to the library. If a symlink to this folder already exists,
-then the folder is ignored. If a symlink with the same name already exists, and
-links to a different folder, an altername symlink name is created from the name
+should be linked into the target library. 
+
+If 'radiouse' is a zero-byte file, then the folder in which it is found will be
+symlinked into the target library folder. Otherwise, it will be treated as a
+list of files which should be added to the library; a folder will be created,
+and the listed files will be linked into it.
+
+If a folder in the source library already exists in the target library (either
+as a symlink or a folder of symlinks), it will be checked to see if it's the
+same folder; if so, it will be ignored. If it's *not* the same folder (such as
+anotehr album with the same name), an alternate name is created from the name
 of the folder, along with the name of the parent folder. This is intended to
 link in folders arranged in artist/album hierarchy, but also takes into account
 the possibility of the same album name from different artists.

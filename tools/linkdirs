@@ -13,7 +13,7 @@ dir="`dirname "$dir"`"
 dir="`dirname "$dir"`"
 
 if [ -e "$dir/configs/settings.sh" ]; then
-    . settings.sh
+    . "$dir/configs/settings.sh"
 fi
 
 find "$BASE" -iname "$TAG" | while read file; do
@@ -39,6 +39,10 @@ find "$BASE" -iname "$TAG" | while read file; do
             alt="`dirname "$file"`"
             alt="`basename "$alt"` - $name"
             name="$alt"
+            if [ -e "$TARGET/$name" ]; then
+                # The alternate already exists; we've done this folder already
+                continue
+            fi
         fi
 
         echo "$name"
@@ -61,6 +65,10 @@ find "$BASE" -iname "$TAG" | while read file; do
             alt="`dirname "$file"`"
             alt="`basename "$alt"` - $name"
             name="$alt"
+            if [ -e "$TARGET/$name" ]; then
+                # The alternate already exists; we've done this folder already
+                continue
+            fi
         fi
 
         echo "$name"

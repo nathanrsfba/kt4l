@@ -37,3 +37,6 @@ new
 
 # Local shell script settings
 settings.sh
+
+# Local configurations
+z_local.cfg

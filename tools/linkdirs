@@ -16,6 +16,8 @@ if [ -e "$dir/configs/settings.sh" ]; then
     . "$dir/configs/settings.sh"
 fi
 
+mkdir -p "$TARGET"
+
 find "$BASE" -iname "$TAG" | while read file; do
     tag="$file"
     file="`dirname "$file"`"

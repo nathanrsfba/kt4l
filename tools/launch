@@ -26,10 +26,10 @@ start() {
         echo "Starting Icecast..."
         iccfg="`mktemp --suff .xml /tmp/icecast.XXXXXXXX`"
         tools/cfgtemplate configs/*.cfg < configs/icecast.xml >> "$iccfg"
-        icecast -c "$iccfg" >> log/icecast.log 2>&1 & disown
-        icpid=$!
-        sleep 3
-        echo $icpid > configs/icecast.pid
+        icecast -b -c "$iccfg" >> log/icecast.log 2>&1
+        # icpid=$!
+        # sleep 3
+        # echo $icpid > configs/icecast.pid
     fi
 
     if checkezstream; then

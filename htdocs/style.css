@@ -1,126 +1,129 @@
-body {
-    background: #08c;
-    color: #000;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    align-items: center;
-    margin: 2ex 0;
+@font-face {
+    font-family: 'flexi_ibm_vga_trueregular';
+    src: url('flexi_ibm_vga_true-webfont.woff2') format('woff2'),
+    url('flexi_ibm_vga_true-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
 }
 
-#player {
+body.main {
+    display:flex;
+    flex-direction:column;
+    width:99%;
+    height:100%;
+    align-items:center;
+}
+
+body {
+    background: #000;
+    color: #080;
+}
+
+a {
+    color: #8f8;
+}
+
+#playing,
+.volbtn{
+    cursor: pointer;
+    user-select: none;
+}
+
+#volume {
+    position: relative;
+}
+
+#volctl {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+}
+
+/*
+.about {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    right: 50%;
+}
+*/
+
+.player {
+    font-family: "flexi_ibm_vga_trueregular";
     font-size: 12pt;
-    width: 20em;
+    line-height: .9em;
 }
 
 @media only screen and (min-width: 600px) {
-    body #player {
-        font-size: 16pt;
+    body .player {
+	font-size: 16pt;
     }
 }
-#player .controls {
-    display: flex;
+
+.player {
+    background-color: #008;
+    color: #ccc;
 }
 
-#player .controls button {
-    width: 1.75em;
-    height: 1.75em;
-    border: 0;
-    border-radius: 50%;
-    background: #fff;
+.player .border {
+    color: #ccc;
 }
 
-#player .controls button:hover {
-    background: #ddd;
+.player .titlebar {
+    background-color: #088;
+    color: #fff;
 }
 
-#player .controls input {
-    flex-grow: 1;
+.player .volbtn {
+    background-color: #080;
+    color: #fff;
+}
+
+div.info {
+    display:flex;
+    flex-direction:column;
+    max-width: 60em;
+    height:100%;
+    align-items:center;
+
+}
+
+div.about,
+div.listen,
+div.stuff,
+div.news,
+body.library {
+    font-family: monospace;
     width: 100%;
-    margin-left: 1em;
-}
-#player .recents div,
-#player .playing div {
-    height: 2.5ex;
 }
 
-#player .heading,
-#player .controls,
-#player .playing,
-#player .recents,
-#player #listeners {
-    background: #ccc;
+body.library th {
+    text-align: left;
 }
 
-#player .heading {
-    text-align: center;
-    background: #008;
-    color: #fff;
-    border-radius: 1ex 1ex 0 0;
-    border-top: 1px solid black;
-    border-bottom: 1px solid black;
-}
-#player .controls {
-    color: #fff;
-    padding: 5px;
+div.news h1 {
+    margin-top: 0;
 }
 
-#player .playing div,
-#player .recents div {
-    padding: .1ex .5em;
+div.news h2 {
+    margin-bottom: 0;
 }
 
-#player .playing #playinglabel,
-#player .recents #recentlabel {
-    background: #800;
-    color: #fff;
-    border-top: 1px solid black;
-    border-bottom: 1px solid black;
+div.news .date {
+    font-size: smaller;
 }
 
-#player #listeners {
-    background: #088;
-    color: #fff;
-    border-radius: 0 0 1ex 1ex;
-    padding: .1ex .5em;
-    border-bottom: 1px solid black;
-    border-top: 1px solid black;
+div.news .title {
+    text-decoration: underline;
 }
 
-#player .playing div,
-#player .recents div {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+div.news p {
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
-#player > div {
-    border-left: 1px solid black;
-    border-right: 1px solid black;
+div.news .post {
+    margin-bottom: 2ex;
 }
 
-#playingbox,
-#recentbox {
-    display: none;
-}
-
-#playingbox.visible,
-#recentbox.visible {
-    display: block;
-}
-
-#station {
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: inherit;
-    font-family: inherit;
-    font-size: inherit;
-    text-align: center;
-    width: 100%;
-    outline: none;
-}
-
-#station option {
-    color: #000;
-}
